@@ -318,7 +318,7 @@ def create_main_page(df,df_2):
     grouped_df['Herkunftsland_grouped'] = grouped_df['Herkunftsland'].apply(lambda x: x if x in sorted_values[:15] else 'Others')
 
     # Group by the new column and mean the values
-    grouped_df = grouped_df.groupby('Herkunftsland_grouped').mean().reset_index()
+    #grouped_df = grouped_df.groupby('Herkunftsland_grouped').mean().reset_index()
 
     fig_bar = px.bar(
         grouped_df,
