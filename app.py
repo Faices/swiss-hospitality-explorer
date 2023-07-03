@@ -3,7 +3,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from pyaxis import pyaxis
-import base64
 import datetime
 from dateutil.relativedelta import relativedelta
 import numpy as np
@@ -223,7 +222,7 @@ def create_main_page(df,df_2):
                 delta=f"{average_ankünfte_current_month_change}%"
                 )
 
-    st.caption(f"Die oben aufgezeigten Kennzahlen zeigen die monatliche Durchschnittswerte im ausgewählten Betrachtungszeitraum ({earliest_year} - {most_recent_year}) sowie die aktuellesten Monatswerte ({str(filtered_df_2_current_month['Monat'].iloc[0])} {str(filtered_df_2_current_month['Jahr'].iloc[0])})")
+    st.info(f"Die oben aufgezeigten Kennzahlen zeigen die monatliche Durchschnittswerte im ausgewählten Zeithorizont ({earliest_year} - {most_recent_year}) sowie die aktuellesten Monatswerte ({str(filtered_df_2_current_month['Monat'].iloc[0])} {str(filtered_df_2_current_month['Jahr'].iloc[0])}) verglichen mit dem Vorjahresmonat ({str(filtered_df_2_current_month_last_year['Monat'].iloc[0])} {str(filtered_df_2_current_month_last_year['Jahr'].iloc[0])})")
 
     selected_indicator = st.selectbox('', ["Logiernächte", "Ankünfte", "Betten","Zimmer","Betriebe",'Zimmerauslastung in %','Bettenauslastung in %',"Zimmernächte"], index=0)
 
