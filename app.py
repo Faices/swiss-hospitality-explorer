@@ -370,6 +370,4 @@ def create_main_page(df,df_2):
         mime='text/csv'
     )
 
-
-
 create_main_page(df_country,df_supply)
