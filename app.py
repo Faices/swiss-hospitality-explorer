@@ -114,15 +114,13 @@ def create_main_page(df,df_2):
 
 
     # Define the date range for the slider
-    start_date = datetime.date(2017, 1, 1)
+    start_date = datetime.date(2018, 1, 1)
     end_date = cutoff_date
-    first_day_actual_month = cutoff_date.replace(day=1) 
+    first_day_actual_month = cutoff_date.replace(day=1)
 
-    # Move the code to the Streamlit sidebar
-    st.sidebar.subheader("Date Range")
 
     # Create the date slider widget
-    selected_dates = st.sidebar.date_input("Select Dates", [start_date, end_date])
+    selected_dates = st.sidebar.date_input("Zeithorizont", [start_date, end_date])
     # Convert the selected dates to datetime.date objects
     start_date = selected_dates[0]
     end_date = selected_dates[1]
@@ -139,117 +137,153 @@ def create_main_page(df,df_2):
     average_betten_per_month_formatted = "{:,.0f}".format(filtered_df_2['Betten'].mean())
     average_betriebe_per_month_formatted = "{:,.0f}".format(filtered_df_2['Betriebe'].mean())
     average_ankünfte_per_month_formatted = "{:,.0f}".format(filtered_df_2['Ankünfte'].mean())
-
-    st.subheader(f"Monatliche Durchschnittswerte für {selected_Gemeinde}")
+    st.title(":flag-ch: Hotellerie Explorer")
+    st.header(f"{selected_Gemeinde}")
+    #st.subheader(f"Markt und Gesamtentwicklung")
 
     earliest_year = filtered_df_2["Jahr"].min()
     most_recent_year = filtered_df_2["Jahr"].max()
+
+    #################### Aktuelle KPIS #######################
+
+    # Metrics Avererges last Month
+    filtered_df_2_current_month = filtered_df_2[filtered_df_2["Date"] == first_day_actual_month]
+    filtered_df_2_current_month_last_year = filtered_df_2[filtered_df_2["Date"] == first_day_actual_month - datetime.timedelta(days=365)]
+
+    def calculate_percentage_change(current_value, previous_value):
+        percentage_change = ((current_value - previous_value) / previous_value) * 100
+        return round(percentage_change, 1)
     
-    st.caption(f"Betrachtungszeitraum {earliest_year} - {most_recent_year}")
+    # Format the metrics with thousand separators and no decimal places
+    average_zimmerauslastung_current_month = filtered_df_2_current_month['Zimmerauslastung in %'].mean()
+    average_zimmerauslastung_current_month_formatted = "{:,.0f}%".format(average_zimmerauslastung_current_month)
+    average_zimmerauslastung_current_month_last_year = filtered_df_2_current_month_last_year['Zimmerauslastung in %'].mean()
+    average_zimmerauslastung_current_month_change = "{:,.0f}".format(average_zimmerauslastung_current_month - average_zimmerauslastung_current_month_last_year)
+
+    average_bettenauslastung_current_month = filtered_df_2_current_month['Bettenauslastung in %'].mean()
+    average_bettenauslastung_current_month_formatted = "{:,.0f}%".format(average_bettenauslastung_current_month)
+    average_bettenauslastung_current_month_last_year = filtered_df_2_current_month_last_year['Bettenauslastung in %'].mean()
+    average_bettenauslastung_current_month_change = "{:,.0f}".format(average_bettenauslastung_current_month - average_bettenauslastung_current_month_last_year)
+
+
+    average_logiernächte_current_month = filtered_df_2_current_month['Logiernächte'].mean()
+    average_logiernächte_current_month_formatted = "{:,.0f}".format(average_logiernächte_current_month)
+    average_logiernächte_current_month_last_year = filtered_df_2_current_month_last_year['Logiernächte'].mean()
+    average_logiernächte_current_month_change = "{:,.1f}".format(calculate_percentage_change(average_logiernächte_current_month, average_logiernächte_current_month_last_year ))
+
+    average_ankünfte_current_month = filtered_df_2_current_month['Ankünfte'].mean()
+    average_ankünfte_current_month_formatted = "{:,.0f}".format(average_ankünfte_current_month)
+    average_ankünfte_current_month_last_year = filtered_df_2_current_month_last_year['Ankünfte'].mean()
+    average_ankünfte_current_month_change = "{:,.1f}".format(calculate_percentage_change(average_ankünfte_current_month, average_ankünfte_current_month_last_year ))
+
+    average_betten_current_month = filtered_df_2_current_month['Betten'].mean()
+    average_betten_current_month_formatted = "{:,.0f}".format(average_betten_current_month)
+    average_betten_current_month_last_year = filtered_df_2_current_month_last_year['Betten'].mean()
+    average_betten_current_month_change = "{:,.0f}".format(average_betten_current_month - average_betten_current_month_last_year)
+
+    average_betriebe_current_month = filtered_df_2_current_month['Betriebe'].mean()
+    average_betriebe_current_month_formatted = "{:,.0f}".format(average_betriebe_current_month)
+    average_betriebe_current_month_last_year = filtered_df_2_current_month_last_year['Betriebe'].mean()
+    average_betriebe_current_month_change = "{:,.0f}".format(average_betriebe_current_month - average_betriebe_current_month_last_year)
+    
     # Create two columns for metrics and line chart
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4, col5, col6 ,col7, col8 = st.columns(8)
 
     # Display the metrics dynamically based on the selected plot type
-    col2.metric(f"Betriebe",average_betriebe_per_month_formatted)
-    col1.metric(f"Logiernächte",average_logiernächte_per_month_formatted_2)
-    col3.metric(f"Bettenauslastung", average_bettenauslastung_per_month_formatted)
+    col1.metric(f"Logiernächte ⌀ ",average_logiernächte_per_month_formatted_2)
+    col2.metric(f"{str(filtered_df_2_current_month['Monat'].iloc[0])} {str(filtered_df_2_current_month['Jahr'].iloc[0])}",
+                average_logiernächte_current_month_formatted,
+                delta=f"{average_logiernächte_current_month_change}%")
+    col4.metric(f"Betriebe ⌀ ",average_betriebe_per_month_formatted)
+    col5.metric(f" {str(filtered_df_2_current_month['Monat'].iloc[0])} {str(filtered_df_2_current_month['Jahr'].iloc[0])}",
+                average_betriebe_current_month_formatted,
+                delta=f"{average_betriebe_current_month_change}")
+    col7.metric(f"Bettenauslastung ⌀ ", average_bettenauslastung_per_month_formatted)
+    col8.metric(f"{str(filtered_df_2_current_month['Monat'].iloc[0])} {str(filtered_df_2_current_month['Jahr'].iloc[0])}",
+                average_bettenauslastung_current_month_formatted,
+                delta = f"{average_bettenauslastung_current_month_change}"
+                )
 
     # Create two columns for metrics and line chart
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4, col5, col6 ,col7, col8 = st.columns(8)
 
-    col3.metric(f"Zimmerauslastung", average_zimmerauslastung_per_month_formatted)
-    col2.metric(f"Betten",average_betten_per_month_formatted)
-    col1.metric(f"Ankünfte",average_ankünfte_per_month_formatted)
+    col7.metric(f"Zimmerauslastung ⌀ ", average_zimmerauslastung_per_month_formatted)
+    col8.metric(
+        f"{str(filtered_df_2_current_month['Monat'].iloc[0])} {str(filtered_df_2_current_month['Jahr'].iloc[0])}",
+        average_zimmerauslastung_current_month_formatted,
+        delta=f"{average_zimmerauslastung_current_month_change}"
+        )
+    col4.metric(f"Betten ⌀ ",average_betten_per_month_formatted)
+    col5.metric(f"{str(filtered_df_2_current_month['Monat'].iloc[0])} {str(filtered_df_2_current_month['Jahr'].iloc[0])}",
+                average_betten_current_month_formatted,
+                delta=f"{average_betten_current_month_change}")
+    col1.metric(f"Ankünfte ⌀ ",average_ankünfte_per_month_formatted)
+    col2.metric(f"{str(filtered_df_2_current_month['Monat'].iloc[0])} {str(filtered_df_2_current_month['Jahr'].iloc[0])}",
+                average_ankünfte_current_month_formatted,
+                delta=f"{average_ankünfte_current_month_change}%"
+                )
 
-    # Create two columns
-    col1, col2 = st.columns([4, 1])
+    st.caption(f"Die oben aufgezeigten Kennzahlen zeigen die monatliche Durchschnittswerte im ausgewählten Betrachtungszeitraum ({earliest_year} - {most_recent_year}) sowie die aktuellesten Monatswerte ({str(filtered_df_2_current_month['Monat'].iloc[0])} {str(filtered_df_2_current_month['Jahr'].iloc[0])})")
 
-    # Select box in the second column
-    # Add CSS styling to vertically center the select box
-    selected_indicator_1 = col2.selectbox('Indikator', ["Logiernächte", "Ankünfte", "Betten","Zimmer","Betriebe",'Zimmerauslastung in %','Bettenauslastung in %',"Zimmernächte"], index=0)
+    selected_indicator = st.selectbox('', ["Logiernächte", "Ankünfte", "Betten","Zimmer","Betriebe",'Zimmerauslastung in %','Bettenauslastung in %',"Zimmernächte"], index=0)
+
 
     # Line chart using Plotly in the first column
     fig_line = px.line(filtered_df_2,
                     x='Date',
-                    y=selected_indicator_1,
-                    title=f"{selected_Gemeinde} pro Monat",
+                    y=selected_indicator,
+                    title=f"",
                     color_discrete_sequence=['#0e4130'])
     # calculate indikator mean
-    avg = filtered_df_2[selected_indicator_1].mean()
+    avg = filtered_df_2[selected_indicator].mean()
 
 
     # Add trace for the average line
-    fig_line.add_hline(y=avg, line_dash="dot", line_color='#0e4130', annotation_text=f"Average: {avg:,.0f}")
+    fig_line.add_hline(y=avg,
+                       line_dash="dot",
+                       #annotation_text=f"⌀ {selected_indicator}",
+                       #annotation_position="bottom right",
+                       #annotation_text_color='#0e4130'
+                       )
     
     fig_line.update_layout(
         xaxis_title=''  # Hide the title of the x-axis
     )
+    st.plotly_chart(fig_line, use_container_width=True, auto_open=False)
+    st.caption(f"Abbildung 1: {selected_indicator} pro Monat in der Gemeinde {selected_Gemeinde} von  {earliest_year} - {most_recent_year}")
 
-    col1.plotly_chart(fig_line, use_container_width=True, auto_open=False)
-
-    # Metrics Avererges last Month
-    filtered_df_2_current_month = filtered_df_2[filtered_df_2["Date"] == first_day_actual_month]
-
-    # Format the metrics with thousand separators and no decimal places
-    average_zimmerauslastung_current_month_formatted = "{:,.0f}%".format(filtered_df_2_current_month['Zimmerauslastung in %'].mean())
-    average_bettenauslastung_current_month_formatted = "{:,.0f}%".format(filtered_df_2_current_month['Bettenauslastung in %'].mean())
-    average_logiernächte_current_month_formatted_2 = "{:,.0f}".format(filtered_df_2_current_month['Logiernächte'].mean())
-    average_betten_current_month_formatted = "{:,.0f}".format(filtered_df_2_current_month['Betten'].mean())
-    average_betriebe_current_month_formatted = "{:,.0f}".format(filtered_df_2_current_month['Betriebe'].mean())
-    average_ankünfte_current_month_formatted = "{:,.0f}".format(filtered_df_2_current_month['Ankünfte'].mean())
-
-    st.subheader(f"Aktuelle Durchschnittswerte für {selected_Gemeinde} im {str(filtered_df_2_current_month['Monat'].iloc[0])} {str(filtered_df_2_current_month['Jahr'].iloc[0])}")
-    # Create two columns for metrics and line chart
-    col1, col2, col3 = st.columns(3)
-
-    # Display the metrics dynamically based on the selected plot type
-    col2.metric(f"Betriebe",average_betriebe_current_month_formatted)
-    col1.metric(f"Logiernächte",average_logiernächte_current_month_formatted_2)
-    col3.metric(f"Bettenauslastung", average_bettenauslastung_current_month_formatted)
-
-    # Create two columns for metrics and line chart
-    col1, col2, col3 = st.columns(3)
-
-    col3.metric(f"Zimmerauslastung", average_zimmerauslastung_current_month_formatted)
-    col2.metric(f"Betten",average_betten_current_month_formatted)
-    col1.metric(f"Ankünfte",average_ankünfte_current_month_formatted)
-
-
-    # Create two columns
-    col1, col3 = st.columns([4, 1])
-     # Add CSS styling to vertically center the select box
-    selected_indicator_2 = col3.selectbox('Indikator', ["Logiernächte", "Ankünfte", "Betten","Zimmer","Betriebe",'Zimmerauslastung in %','Bettenauslastung in %',"Zimmernächte"], index=0,key="selected_indicator_2")
 
     # Line chart using Plotly in the first column
     fig_line = px.line(filtered_df_2,
                     x='Monat',
                     color='Jahr',
-                    y=selected_indicator_2,
-                    title=f"{selected_Gemeinde} pro Monat",
+                    y=selected_indicator,
+                    title=f"",
                     color_discrete_sequence=custom_color_sequence)
     # calculate indikator mean
-    avg = filtered_df_2[selected_indicator_2].mean()
+    avg = filtered_df_2[selected_indicator].mean()
 
-
-    # Add trace for the average line
-    fig_line.add_hline(y=avg, line_dash="dot", line_color='#0e4130', annotation_text=f"Average: {avg:,.0f}")
     
     fig_line.update_layout(
         xaxis_title='',  # Hide the title of the x-axis
         legend_traceorder="reversed"  # Sort the legend in descending order
     )
 
-    col1.plotly_chart(fig_line, use_container_width=True, auto_open=False)
+    st.plotly_chart(fig_line, use_container_width=True, auto_open=False)
+    st.caption(f"Abbildung 2: {selected_indicator} pro Monat in der Gemeinde {selected_Gemeinde} im Jahresvergleich")
+
+    # Create two columns for metrics and line chart
+    col1, col2, col3, col4, col5, col6 ,col7, col8 = st.columns(8)
+    col1.text("")
 
 
-
-
+    st.subheader(f"Kennzahlen nach Herkunftsland")
 
 
     # Add a multi-select sidebar for selecting Herkunftsländer
     all_herkunftsländer = df['Herkunftsland'].unique()
     herkunftsländer_options = ['Alle Herkunftsländer'] + all_herkunftsländer.tolist()
-    selected_herkunftsländer = st.sidebar.multiselect('Herkunftsländer', herkunftsländer_options,
+    selected_herkunftsländer = st.multiselect('Herkunftsländer', herkunftsländer_options,
                                                     default=['Alle Herkunftsländer'])
 
     # Check if "Alle Herkunftsländer" option is chosen
@@ -263,18 +297,14 @@ def create_main_page(df,df_2):
     filtered_df = filtered_df[(filtered_df['Date'] >= start_date) & (df['Date'] <= end_date)]
 
     # Add a radio button to switch between Logiernächte and Ankünfte
-    plot_type = st.sidebar.radio("Kennzahl", ("Logiernächte", "Ankünfte"))
+    selected_indicator_2 = st.selectbox('', ["Logiernächte", "Ankünfte"], index=0)
+
 
     # Determine the column for the y-axis based on the selected plot type
-    if plot_type == 'Logiernächte':
+    if selected_indicator_2 == 'Logiernächte':
         y_column = 'Logiernächte'
-    elif plot_type == 'Ankünfte':
+    elif selected_indicator_2 == 'Ankünfte':
         y_column = 'Ankünfte'
-    
-    
-    
-    # Calculate totals
-    totals = filtered_df.groupby('Date')[y_column].sum().reset_index()
 
 
      # Create two columns for metrics and line chart
@@ -296,7 +326,7 @@ def create_main_page(df,df_2):
         x='Herkunftsland_grouped',
         y=y_column,
         color='Herkunftsland_grouped',
-        title="Durchschnittliche " + plot_type + " pro Monat nach Herkunftsland",
+        title="Durchschnittliche " + selected_indicator_2 + " pro Monat nach Herkunftsland",
         color_discrete_sequence=custom_color_sequence,
         category_orders={'Herkunftsland_grouped': sorted_values[:15] + ['Others']}  # Set custom category order
     )
@@ -326,9 +356,11 @@ def create_main_page(df,df_2):
     col1.plotly_chart(fig_bar, use_container_width=True, auto_open=False)
     col3.plotly_chart(fig_donut, use_container_width=True, auto_open=False)
 
+    st.caption(f"Abbildung 3: Durchschnittliche {selected_indicator} pro Monat in der Gemeinde {selected_Gemeinde} von {earliest_year} - {most_recent_year}")
+
     # Display selected data as a table
-    st.write("")
-    st.dataframe(filtered_df.reset_index(drop=True))
+    #st.write("")
+    #st.dataframe(filtered_df.reset_index(drop=True))
 
     # Download CSV
     csv = filtered_df.to_csv(index=False)
