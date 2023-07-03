@@ -325,7 +325,7 @@ def create_main_page(df,df_2):
         x='Herkunftsland_grouped',
         y=y_column,
         color='Herkunftsland_grouped',
-        title="Durchschnittliche " + selected_indicator_2 + " pro Monat nach Herkunftsland",
+        title="",
         color_discrete_sequence=custom_color_sequence,
         category_orders={'Herkunftsland_grouped': sorted_values[:15] + ['Others']}  # Set custom category order
     )
@@ -355,7 +355,7 @@ def create_main_page(df,df_2):
     col1.plotly_chart(fig_bar, use_container_width=True, auto_open=False)
     col3.plotly_chart(fig_donut, use_container_width=True, auto_open=False)
 
-    st.caption(f"Abbildung 3: Durchschnittliche {selected_indicator} pro Monat in der Gemeinde {selected_Gemeinde} von {earliest_year} - {most_recent_year}")
+    st.caption(f"Abbildung 3: Durchschnittliche {selected_indicator} pro Monat in der Gemeinde {selected_Gemeinde} von {earliest_year} - {most_recent_year} nach Herkunftsland")
 
     # Display selected data as a table
     #st.write("")
