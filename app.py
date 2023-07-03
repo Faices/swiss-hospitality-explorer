@@ -114,7 +114,7 @@ def create_main_page(df,df_2):
 
 
     # Define the date range for the slider
-    start_date = datetime.date(2013, 1, 1)
+    start_date = datetime.date(2017, 1, 1)
     end_date = cutoff_date
     first_day_actual_month = cutoff_date.replace(day=1) 
 
