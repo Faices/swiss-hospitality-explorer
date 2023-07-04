@@ -204,25 +204,25 @@ def create_main_page(df):
     col5.metric(f" {str(filtered_df_2_current_month['Monat'].iloc[0])} {str(filtered_df_2_current_month['Jahr'].iloc[0])}",
                 average_betriebe_current_month_formatted,
                 delta=f"{average_betriebe_current_month_change}")
+    col7.metric(f"Betten ⌀ ",average_betten_per_month_formatted)
+    col8.metric(f"{str(filtered_df_2_current_month['Monat'].iloc[0])} {str(filtered_df_2_current_month['Jahr'].iloc[0])}",
+                average_betten_current_month_formatted,
+                delta=f"{average_betten_current_month_change}")
+
+    # Create two columns for metrics and line chart
+    col1, col2, col3, col4, col5, col6 ,col7, col8 = st.columns(8)
+
+    col4.metric(f"Zimmerauslastung ⌀ ", average_zimmerauslastung_per_month_formatted)
+    col5.metric(
+        f"{str(filtered_df_2_current_month['Monat'].iloc[0])} {str(filtered_df_2_current_month['Jahr'].iloc[0])}",
+        average_zimmerauslastung_current_month_formatted,
+        delta=f"{average_zimmerauslastung_current_month_change}"
+        )
     col7.metric(f"Bettenauslastung ⌀ ", average_bettenauslastung_per_month_formatted)
     col8.metric(f"{str(filtered_df_2_current_month['Monat'].iloc[0])} {str(filtered_df_2_current_month['Jahr'].iloc[0])}",
                 average_bettenauslastung_current_month_formatted,
                 delta = f"{average_bettenauslastung_current_month_change}"
                 )
-
-    # Create two columns for metrics and line chart
-    col1, col2, col3, col4, col5, col6 ,col7, col8 = st.columns(8)
-
-    col7.metric(f"Zimmerauslastung ⌀ ", average_zimmerauslastung_per_month_formatted)
-    col8.metric(
-        f"{str(filtered_df_2_current_month['Monat'].iloc[0])} {str(filtered_df_2_current_month['Jahr'].iloc[0])}",
-        average_zimmerauslastung_current_month_formatted,
-        delta=f"{average_zimmerauslastung_current_month_change}"
-        )
-    col4.metric(f"Betten ⌀ ",average_betten_per_month_formatted)
-    col5.metric(f"{str(filtered_df_2_current_month['Monat'].iloc[0])} {str(filtered_df_2_current_month['Jahr'].iloc[0])}",
-                average_betten_current_month_formatted,
-                delta=f"{average_betten_current_month_change}")
     col1.metric(f"Ankünfte ⌀ ",average_ankünfte_per_month_formatted)
     col2.metric(f"{str(filtered_df_2_current_month['Monat'].iloc[0])} {str(filtered_df_2_current_month['Jahr'].iloc[0])}",
                 average_ankünfte_current_month_formatted,
