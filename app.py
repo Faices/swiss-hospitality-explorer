@@ -397,7 +397,9 @@ def create_markt_page():
     st.image(image, caption='Coming Chritmas 2002')
 
 # Sidebar navigation
-page = st.sidebar.selectbox("Seitenauswahl", ("Nach Gemeinde", "Nach Gemeinde und Herkunftsland","Gesamtmarkt"))
+st.sidebar.title("🇨🇭 Hotellerie Explorer")
+page = st.sidebar.selectbox("", ("Nach Gemeinde", "Nach Gemeinde und Herkunftsland","Gesamtmarkt"))
+st.sidebar.divider() 
     
 if page == "Nach Gemeinde":
     create_main_page(df_supply)
