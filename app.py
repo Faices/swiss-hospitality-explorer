@@ -9,7 +9,7 @@ import numpy as np
 from PIL import Image
 
 # Set the page width
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide",page_title='Hotellerie Explorer (Beta)',page_icon= "🇨🇭")
 
 custom_color_sequence = [
     '#80bbad', '#435254', '#17e88f', '#dbd99a', '#5ab689', '#368c7a', '#93b886', '#779778', '#1ad3aa', '#c4c085',
