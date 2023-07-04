@@ -388,10 +388,16 @@ def create_other_page(df):
         mime='text/csv'
     )
 
+def create_markt_page(df_country):
+    st.write("Coming soon")
+    st.image("")
+
 # Sidebar navigation
-page = st.sidebar.selectbox("Seitenauswahl", ("Nach Gemeinde", "Nach Gemeinde und Herkunftsland"))
+page = st.sidebar.selectbox("Seitenauswahl", ("Nach Gemeinde", "Nach Gemeinde und Herkunftsland","Gesamtmarkt"))
     
 if page == "Nach Gemeinde":
     create_main_page(df_supply)
 elif page == "Nach Gemeinde und Herkunftsland":
     create_other_page(df_country)
+elif page == "Gesamtmarkt":
+    create_markt_page(df_country)
