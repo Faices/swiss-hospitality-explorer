@@ -228,8 +228,9 @@ def create_main_page(df):
                 average_ankünfte_current_month_formatted,
                 delta=f"{average_ankünfte_current_month_change}%"
                 )
-
-    st.info(f"Die oben aufgezeigten Kennzahlen zeigen die monatliche Durchschnittswerte im ausgewählten Zeithorizont ({earliest_year} - {most_recent_year}) sowie die aktuellesten Monatswerte ({str(filtered_df_2_current_month['Monat'].iloc[0])} {str(filtered_df_2_current_month['Jahr'].iloc[0])}) verglichen mit dem Vorjahresmonat ({str(filtered_df_2_current_month_last_year['Monat'].iloc[0])} {str(filtered_df_2_current_month_last_year['Jahr'].iloc[0])})")
+    with st.expander("Infos zu den Kennzahlen"):
+        st.info(f"Die oben aufgezeigten Kennzahlen zeigen die monatliche Durchschnittswerte im ausgewählten Zeithorizont ({earliest_year} - {most_recent_year}) sowie die aktuellesten Monatswerte ({str(filtered_df_2_current_month['Monat'].iloc[0])} {str(filtered_df_2_current_month['Jahr'].iloc[0])}) verglichen mit dem Vorjahresmonat ({str(filtered_df_2_current_month_last_year['Monat'].iloc[0])} {str(filtered_df_2_current_month_last_year['Jahr'].iloc[0])})")
+    
 
     selected_indicator = st.sidebar.selectbox('Auswahl Kennzahl', ["Logiernächte", "Ankünfte", "Betten","Zimmer","Betriebe",'Zimmerauslastung in %','Bettenauslastung in %',"Zimmernächte"], index=0)
 
