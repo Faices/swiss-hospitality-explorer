@@ -391,8 +391,8 @@ def create_other_page(df):
     )
 
 def create_markt_page():
-    st.title(":flag-ch: Hotellerie Explorer")
-    st.header(f"Kennzahlen Gesamtmarkt")
+    #st.title(":flag-ch: Hotellerie Explorer")
+    st.title(f":flag-ch: Kennzahlen Gesamtmarkt")
     image = Image.open('under-construction.gif')
     st.image(image, caption='Coming Chritmas 2002')
 
