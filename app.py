@@ -135,8 +135,8 @@ def create_main_page(df):
     average_betten_per_month_formatted = "{:,.0f}".format(filtered_df_2['Betten'].mean())
     average_betriebe_per_month_formatted = "{:,.0f}".format(filtered_df_2['Betriebe'].mean())
     average_ankünfte_per_month_formatted = "{:,.0f}".format(filtered_df_2['Ankünfte'].mean())
-    st.title(":flag-ch: Hotellerie Explorer")
-    st.header(f"Kennzahlen nach Gemeinde: {selected_Gemeinde}")
+    #st.title(":flag-ch: Hotellerie Explorer")
+    st.title(f":flag-ch: Kennzahlen nach Gemeinde: {selected_Gemeinde}")
     #st.subheader(f"Markt und Gesamtentwicklung")
 
     earliest_year = filtered_df_2["Jahr"].min()
@@ -287,8 +287,8 @@ def create_other_page(df):
     selected_Gemeinde = st.sidebar.selectbox('Auswahl Gemeinde', df['Gemeinde'].unique(), index=0)
     # Filter dataframe based on selected Gemeinde
     filtered_df = df[df['Gemeinde'] == selected_Gemeinde]
-    st.title(":flag-ch: Hotellerie Explorer")
-    st.header(f"Kennzahlen nach Gemeinde und Herkunftsland: {selected_Gemeinde}")
+    #st.title(":flag-ch: Hotellerie Explorer")
+    st.title(f":flag-ch: Kennzahlen nach Gemeinde und Herkunftsland: {selected_Gemeinde}")
 
 
     current_date = datetime.date.today()
