@@ -6,6 +6,7 @@ from pyaxis import pyaxis
 import datetime
 from dateutil.relativedelta import relativedelta
 import numpy as np
+from PIL import Image
 
 # Set the page width
 st.set_page_config(layout="wide")
@@ -388,9 +389,11 @@ def create_other_page(df):
         mime='text/csv'
     )
 
-def create_markt_page(df_country):
-    st.write("Coming soon")
-    st.image("")
+def create_markt_page():
+    st.title(":flag-ch: Hotellerie Explorer")
+    st.header(f"Kennzahlen Gesamtmarkt")
+    image = Image.open('under-construction.gif')
+    st.image(image, caption='Coming Chritmas 2002')
 
 # Sidebar navigation
 page = st.sidebar.selectbox("Seitenauswahl", ("Nach Gemeinde", "Nach Gemeinde und Herkunftsland","Gesamtmarkt"))
@@ -400,4 +403,4 @@ if page == "Nach Gemeinde":
 elif page == "Nach Gemeinde und Herkunftsland":
     create_other_page(df_country)
 elif page == "Gesamtmarkt":
-    create_markt_page(df_country)
+    create_markt_page()
