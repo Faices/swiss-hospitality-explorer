@@ -28,6 +28,7 @@ custom_color_sequence = [
     '#1ad3aa'
 ]
 
+
 # Store data as a pandas dataframe
 @st.cache_data
 def load_data():
@@ -97,15 +98,12 @@ def load_data():
 
 df_country,df_supply = load_data()
 
-
-
-def create_main_page(df,df_2):
+def create_main_page(df):
     # Sidebar for selecting specific Gemeinde
-    selected_Gemeinde = st.sidebar.selectbox('Gemeinde', df['Gemeinde'].unique(), index=0)
+    selected_Gemeinde = st.sidebar.selectbox('Auswahl Gemeinde', df['Gemeinde'].unique(), index=0)
 
     # Filter dataframe based on selected Gemeinde
-    filtered_df = df[df['Gemeinde'] == selected_Gemeinde]
-    filtered_df_2 = df_2[df_2['Gemeinde'] == selected_Gemeinde]
+    filtered_df_2 = df[df['Gemeinde'] == selected_Gemeinde]
 
     current_date = datetime.date.today()
     # Calculate the cutoff date (last day of the month before the previous month)
@@ -119,7 +117,7 @@ def create_main_page(df,df_2):
 
 
     # Create the date slider widget
-    selected_dates = st.sidebar.date_input("Zeithorizont", [start_date, end_date])
+    selected_dates = st.sidebar.date_input("Auswahl Zeithorizont", [start_date, end_date])
     # Convert the selected dates to datetime.date objects
     start_date = selected_dates[0]
     end_date = selected_dates[1]
@@ -137,7 +135,7 @@ def create_main_page(df,df_2):
     average_betriebe_per_month_formatted = "{:,.0f}".format(filtered_df_2['Betriebe'].mean())
     average_ankünfte_per_month_formatted = "{:,.0f}".format(filtered_df_2['Ankünfte'].mean())
     st.title(":flag-ch: Hotellerie Explorer")
-    st.header(f"{selected_Gemeinde}")
+    st.header(f"Kennzahlen nach Gemeinde: {selected_Gemeinde}")
     #st.subheader(f"Markt und Gesamtentwicklung")
 
     earliest_year = filtered_df_2["Jahr"].min()
@@ -185,6 +183,14 @@ def create_main_page(df,df_2):
     average_betriebe_current_month_last_year = filtered_df_2_current_month_last_year['Betriebe'].mean()
     average_betriebe_current_month_change = "{:,.0f}".format(average_betriebe_current_month - average_betriebe_current_month_last_year)
     
+    #css_example = '''
+    #I'm importing the font-awesome icons as a stylesheet!                                                                                                                                                       
+    #<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">                                                                                                    
+                                                                                                                                                                                                                
+    #<i class="fa-solid fa-bed"></i>'''
+
+    #st.write(css_example, unsafe_allow_html=True)
+
     # Create two columns for metrics and line chart
     col1, col2, col3, col4, col5, col6 ,col7, col8 = st.columns(8)
 
@@ -224,7 +230,7 @@ def create_main_page(df,df_2):
 
     st.info(f"Die oben aufgezeigten Kennzahlen zeigen die monatliche Durchschnittswerte im ausgewählten Zeithorizont ({earliest_year} - {most_recent_year}) sowie die aktuellesten Monatswerte ({str(filtered_df_2_current_month['Monat'].iloc[0])} {str(filtered_df_2_current_month['Jahr'].iloc[0])}) verglichen mit dem Vorjahresmonat ({str(filtered_df_2_current_month_last_year['Monat'].iloc[0])} {str(filtered_df_2_current_month_last_year['Jahr'].iloc[0])})")
 
-    selected_indicator = st.selectbox('', ["Logiernächte", "Ankünfte", "Betten","Zimmer","Betriebe",'Zimmerauslastung in %','Bettenauslastung in %',"Zimmernächte"], index=0)
+    selected_indicator = st.sidebar.selectbox('Auswahl Kennzahl', ["Logiernächte", "Ankünfte", "Betten","Zimmer","Betriebe",'Zimmerauslastung in %','Bettenauslastung in %',"Zimmernächte"], index=0)
 
 
     # Line chart using Plotly in the first column
@@ -232,7 +238,7 @@ def create_main_page(df,df_2):
                     x='Date',
                     y=selected_indicator,
                     title=f"",
-                    color_discrete_sequence=['#0e4130'])
+                    color_discrete_sequence=['#000000'])
     # calculate indikator mean
     avg = filtered_df_2[selected_indicator].mean()
 
@@ -275,34 +281,46 @@ def create_main_page(df,df_2):
     col1, col2, col3, col4, col5, col6 ,col7, col8 = st.columns(8)
     col1.text("")
 
-
-    st.subheader(f"Kennzahlen nach Herkunftsland")
-
-
-    # Add a multi-select sidebar for selecting Herkunftsländer
-    all_herkunftsländer = df['Herkunftsland'].unique()
-    herkunftsländer_options = ['Alle Herkunftsländer'] + all_herkunftsländer.tolist()
-    selected_herkunftsländer = st.multiselect('Herkunftsländer', herkunftsländer_options,
-                                                    default=['Alle Herkunftsländer'])
-
-    # Check if "Alle Herkunftsländer" option is chosen
-    if 'Alle Herkunftsländer' in selected_herkunftsländer:
-        selected_herkunftsländer = all_herkunftsländer
+def create_other_page(df):
+    selected_Gemeinde = st.sidebar.selectbox('Auswahl Gemeinde', df['Gemeinde'].unique(), index=0)
+    # Filter dataframe based on selected Gemeinde
+    filtered_df = df[df['Gemeinde'] == selected_Gemeinde]
+    st.title(":flag-ch: Hotellerie Explorer")
+    st.header(f"Kennzahlen nach Gemeinde und Herkunftsland: {selected_Gemeinde}")
 
 
-    # Filter dataframe based on selected Herkunftsländer and date range
-    filtered_df = filtered_df[(filtered_df['Herkunftsland'].isin(selected_herkunftsländer))]
+    current_date = datetime.date.today()
+    # Calculate the cutoff date (last day of the month before the previous month)
+    cutoff_date = datetime.date(current_date.year, current_date.month, 1) - relativedelta(months=2) - datetime.timedelta(days=1)
+
+
+    # Define the date range for the slider
+    start_date = datetime.date(2018, 1, 1)
+    end_date = cutoff_date
+
+
+    # Create the date slider widget
+    selected_dates = st.sidebar.date_input("Auswahl Zeithorizont", [start_date, end_date])
+    # Convert the selected dates to datetime.date objects
+    start_date = selected_dates[0]
+    end_date = selected_dates[1]
+    # Filter df2 based on selection
+    filtered_df = filtered_df [(filtered_df['Date'] >= start_date) & (df['Date'] <= end_date)]
+
     # Filter DataFrame based on selected date range
     filtered_df = filtered_df[(filtered_df['Date'] >= start_date) & (df['Date'] <= end_date)]
 
+    earliest_year = filtered_df["Jahr"].min()
+    most_recent_year = filtered_df["Jahr"].max()
+
     # Add a radio button to switch between Logiernächte and Ankünfte
-    selected_indicator_2 = st.selectbox('', ["Logiernächte", "Ankünfte"], index=0)
+    selected_indicator = st.sidebar.selectbox('Auswahl Kennzahl', ["Logiernächte", "Ankünfte"], index=0)
 
 
     # Determine the column for the y-axis based on the selected plot type
-    if selected_indicator_2 == 'Logiernächte':
+    if selected_indicator == 'Logiernächte':
         y_column = 'Logiernächte'
-    elif selected_indicator_2 == 'Ankünfte':
+    elif selected_indicator == 'Ankünfte':
         y_column = 'Ankünfte'
 
 
@@ -370,4 +388,10 @@ def create_main_page(df,df_2):
         mime='text/csv'
     )
 
-create_main_page(df_country,df_supply)
+# Sidebar navigation
+page = st.sidebar.selectbox("Seitenauswahl", ("Nach Gemeinde", "Nach Gemeinde und Herkunftsland"))
+    
+if page == "Nach Gemeinde":
+    create_main_page(df_supply)
+elif page == "Nach Gemeinde und Herkunftsland":
+    create_other_page(df_country)
