@@ -479,17 +479,19 @@ def create_other_page(df):
         y_column = 'Ankünfte'
 
     # Perform grouping and aggregation
-    grouped_df = filtered_df.groupby(['Herkunftsland', 'Date']).mean().reset_index()
+    grouped_df = filtered_df.groupby(['Herkunftsland', 'Date']).sum().reset_index()
     # Sort the unique values based on aggregated values in descending order
-    sorted_values = grouped_df.groupby('Herkunftsland').mean().sort_values(y_column, ascending=False).index.tolist()
+    sorted_values = grouped_df.groupby('Herkunftsland').sum().sort_values(y_column, ascending=False).index.tolist()
     # Create a new column to group Herkunftsländer
     grouped_df['Herkunftsland_grouped'] = grouped_df['Herkunftsland'].apply(lambda x: x if x in sorted_values[:15] else 'Others')
+    grouped_df_no_date = grouped_df.groupby('Herkunftsland_grouped').agg({'Ankünfte': 'sum', 'Logiernächte': 'sum','Aufenthaltsdauer': 'mean'}).reset_index()
+    grouped_df_date = grouped_df.groupby(['Herkunftsland_grouped','Date']).agg({'Ankünfte': 'sum', 'Logiernächte': 'sum','Aufenthaltsdauer': 'mean'}).reset_index()
 
     # Create two columns for metrics and line chart
     col1, col2, col3 = st.columns([2, 0.2, 1])
 
     fig_bar = px.bar(
-        grouped_df,
+        grouped_df_no_date,
         x='Herkunftsland_grouped',
         y=y_column,
         color='Herkunftsland_grouped',
@@ -507,7 +509,7 @@ def create_other_page(df):
 
     # Donut Chart
     fig_donut = px.pie(
-        grouped_df,
+        grouped_df_no_date,
         names='Herkunftsland_grouped',
         values=y_column,
         hole=0.5,
@@ -521,14 +523,12 @@ def create_other_page(df):
     )
 
     fig_area = px.area(
-        grouped_df,
+        grouped_df_date,
         x='Date',
         y=y_column,
         color='Herkunftsland_grouped',
         color_discrete_sequence=custom_color_sequence
     )
-
-    sorted_values = grouped_df['Herkunftsland_grouped'].value_counts().index[:15].tolist()
     fig_area.update_xaxes(categoryorder='array',
                           categoryarray=sorted_values + ['Others'])
     fig_area.update_layout(
