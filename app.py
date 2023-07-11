@@ -10,13 +10,6 @@ import calendar
 # Set the page width
 st.set_page_config(layout="wide",page_title='Hotellerie Explorer (Beta)',page_icon= "🇨🇭")
 
-custom_color_sequence = [
-    '#80bbad', '#435254', '#17e88f', '#dbd99a', '#5ab689', '#368c7a', '#93b886', '#779778', '#1ad3aa', '#c4c085',
-    '#a6b481', '#15634d', '#00aa85', '#007754', '#abd4c8', '#d4c997', '#bebf7a', '#e2c48e', '#9db784', '#82a793',
-    '#6c9b89', '#4392a3', '#0d808e', '#2b9f83', '#17e8b2', '#c4d6a5', '#a3b082', '#7b8765', '#5ab689', '#368c7a',
-    '#1ad3aa', '#c4c085', '#a6b481', '#779778', '#15634d', '#00aa85', '#007754', '#abd4c8', '#d4c997', '#bebf7a'
-]
-
 
 # Store data as a pandas dataframe
 @st.cache_data
@@ -94,50 +87,22 @@ def load_data():
 
 df_country,df_supply = load_data()
 
-def create_main_page(df):
-    # Sidebar for selecting specific Gemeinde
-    selected_Gemeinde = st.sidebar.selectbox('Auswahl Gemeinde', df['Gemeinde'].unique(), index=0)
 
-    st.title(f":flag-ch: Kennzahlen nach Gemeinde: {selected_Gemeinde}")
+def create_main_page(df,selected_Gemeinde):
+
+    # Sidebar for selecting specific Gemeinde
+    #selected_Gemeinde = st.sidebar.selectbox('Auswahl Gemeinde', df['Gemeinde'].unique(), index=0)
+
+    st.title(f":flag-ch: Kennzahlen nach Gemeinde")
+    st.divider()
+    #st.caption(f"Gemeinde: {selected_Gemeinde}")
 
     # Filter dataframe based on selected Gemeinde
     filtered_df_2 = df[df['Gemeinde'] == selected_Gemeinde]
 
-    # Calculate the cutoff date (last day of the month before the previous month
-    current_date = datetime.date.today()
-
-    if current_date.day < 8:
-        cutoff_date = datetime.date(current_date.year, current_date.month - 3, calendar.monthrange(current_date.year, current_date.month - 3)[1])
-    else:
-        cutoff_date = datetime.date(current_date.year, current_date.month - 2, calendar.monthrange(current_date.year, current_date.month - 2)[1])
-
-    # Define the date range for the slider
-    start_date = datetime.date(2018, 1, 1)
-    end_date = cutoff_date
-    first_day_actual_month = cutoff_date.replace(day=1)
-
-    start_year = start_date.year
-    end_year = end_date.year
-
-    selected_years = st.sidebar.slider(
-        "Zeitraum:",
-        value=(start_year, end_year),
-        min_value=2013,  # Set the minimum value of the slider
-        max_value=end_year  # Set the maximum value of the slider
-    )
-
-    start_year = selected_years[0]
-    end_year = selected_years[1]
-
-    # Get the start_date and end_date based on the selection
-    start_date = datetime.date(start_year, 1, 1)
-    end_date = datetime.date(end_year, 12, 31)
-
-    filtered_df_2 = filtered_df_2 [(filtered_df_2['Jahr'] >= start_year) & (df['Jahr'] <= end_year)]
-    first_day_actual_month = filtered_df_2['Date'].max()
-
-    if end_date > first_day_actual_month:
-        end_date = first_day_actual_month
+    ##########
+    ##########
+    ##########
 
     # Metrics Avererges whole time
     # Format the metrics with thousand separators and no decimal places
@@ -316,11 +281,10 @@ def create_main_page(df):
 
     fig_line.update_layout(
         xaxis_title='',  # Hide the title of the x-axis
-        legend_traceorder="reversed",  # Sort the legend in descending order
+        #legend_traceorder="reversed",  # Sort the legend in descending order
         legend_title_text=''  # Hide the title of the x-axis
     )
-
-    st.plotly_chart(fig_line, use_container_width=True, auto_open=False)
+    st.plotly_chart(fig_line, use_container_width=True, auto_open=True)
     st.caption(f"Abbildung 2: {selected_indicator_Ankünfte_Logiernächte} pro Monat in der Gemeinde {selected_Gemeinde} im Jahresvergleich")
 
     st.markdown('#')
@@ -415,7 +379,7 @@ def create_main_page(df):
     
     fig_line.update_layout(
         xaxis_title='',  # Hide the title of the x-axis
-        legend_traceorder="reversed",  # Sort the legend in descending order
+        #legend_traceorder="reversed",  # Sort the legend in descending order
         legend_title_text=''  # Hide the title of the x-axis
     )
 
@@ -426,51 +390,20 @@ def create_main_page(df):
     col1, col2, col3, col4, col5, col6 ,col7, col8 = st.columns(8)
     col1.text("")
 
-def create_other_page(df):
-    selected_Gemeinde = st.sidebar.selectbox('Auswahl Gemeinde', df['Gemeinde'].unique(), index=0)
+def create_other_page(df,selected_Gemeinde):
+    #selected_Gemeinde = st.sidebar.selectbox('Auswahl Gemeinde', df['Gemeinde'].unique(), index=0)
     
     # Filter dataframe based on selected Gemeinde
     filtered_df = df[df['Gemeinde'] == selected_Gemeinde]
     #st.title(":flag-ch: Hotellerie Explorer")
-    st.title(f":flag-ch: Kennzahlen nach Gemeinde und Herkunftsland: {selected_Gemeinde}")
+    st.title(f":flag-ch: Kennzahlen nach Gemeinde und Herkunftsland")
+    st.divider()
+    #st.caption(f"Gemeinde: {selected_Gemeinde}")
     # Add a radio button to switch between Logiernächte and Ankünfte
     selected_indicator = st.selectbox('Auswahl Kennzahl', ["Logiernächte", "Ankünfte"], index=0)
 
-    # Calculate the cutoff date (last day of the month before the previous month
-    current_date = datetime.date.today()
-
-    if current_date.day < 10:
-        cutoff_date = datetime.date(current_date.year, current_date.month - 3, calendar.monthrange(current_date.year, current_date.month - 3)[1])
-    else:
-        cutoff_date = datetime.date(current_date.year, current_date.month - 2, calendar.monthrange(current_date.year, current_date.month - 2)[1])
-
-    # Define the date range for the slider
-    start_date = datetime.date(2018, 1, 1)
-    end_date = cutoff_date
-    first_day_actual_month = cutoff_date.replace(day=1)
-
-    start_year = start_date.year
-    end_year = end_date.year
-
-    selected_years = st.sidebar.slider(
-        "Zeitraum:",
-        value=(start_year, end_year),
-        min_value=2013,  # Set the minimum value of the slider
-        max_value=end_year  # Set the maximum value of the slider
-    )
-
-    start_year = selected_years[0]
-    end_year = selected_years[1]
-
-    # Get the start_date and end_date based on the selection
-    start_date = datetime.date(start_year, 1, 1)
-    end_date = datetime.date(end_year, 12, 31)
-
-    filtered_df = filtered_df [(filtered_df['Jahr'] >= start_year) & (df['Jahr'] <= end_year)]
-    first_day_actual_month = filtered_df['Date'].max()
-
-    if end_date > first_day_actual_month:
-        end_date = first_day_actual_month
+    #######
+    #######
 
     # Determine the column for the y-axis based on the selected plot type
     if selected_indicator == 'Logiernächte':
@@ -490,6 +423,8 @@ def create_other_page(df):
     # Create two columns for metrics and line chart
     col1, col2, col3 = st.columns([2, 0.2, 1])
 
+
+    #### Detailed top 15 Countries ########
     fig_bar = px.bar(
         grouped_df_no_date,
         x='Herkunftsland_grouped',
@@ -522,6 +457,8 @@ def create_other_page(df):
         legend_title='Herkunftsland'
     )
 
+
+    # Time Areas Detailed
     fig_area = px.area(
         grouped_df_date,
         x='Date',
@@ -534,7 +471,66 @@ def create_other_page(df):
     fig_area.update_layout(
         legend_title='Herkunftsland'
     )
+
+    ### Grobe granularität (International und Domestic ###
+
+    grouped_df_grob = filtered_df.groupby(['Herkunftsland_grob', 'Date']).sum().reset_index()
+    grouped_df_no_date_grob = grouped_df_grob.groupby('Herkunftsland_grob').agg({'Ankünfte': 'sum', 'Logiernächte': 'sum','Aufenthaltsdauer': 'mean'}).reset_index()
+    grouped_df_date_grob = grouped_df_grob.groupby(['Herkunftsland_grob','Date']).agg({'Ankünfte': 'sum', 'Logiernächte': 'sum','Aufenthaltsdauer': 'mean'}).reset_index()
+
+    fig_bar_grob = px.bar(
+        grouped_df_no_date_grob,
+        x='Herkunftsland_grob',
+        y=y_column,
+        color='Herkunftsland_grob',
+        title="",
+        color_discrete_sequence=custom_color_sequence,
+    )
+
+    fig_bar_grob.update_traces(
+        hovertemplate='%{y}',
+        texttemplate='%{y:,.0f}',  # Format the label to display the value with two decimal places
+        textposition='auto'  # Position the labels outside the bars
+        )
+    fig_bar_grob.update_layout(
+        legend_title='Herkunftsland',
+        xaxis_title='',  # Hide the title of the x-axis
+        showlegend=False  # Remove the legend
+    )
+
+    # Donut Chart
+    fig_donut_grob = px.pie(
+        grouped_df_no_date_grob,
+        names='Herkunftsland_grob',
+        values=y_column,
+        hole=0.5,
+        color_discrete_sequence=custom_color_sequence,
+    )
+
+    fig_donut_grob.update_traces(textposition='inside', textinfo='percent')
+    fig_donut_grob.update_layout(
+        legend_title='Herkunftsland'
+    )
+
+    # Time Areas grob
+    fig_area_grob = px.area(
+        grouped_df_date_grob ,
+        x='Date',
+        y=y_column,
+        color='Herkunftsland_grob',
+        color_discrete_sequence=custom_color_sequence
+    )
+    fig_area_grob.update_layout(
+    legend_title='Herkunftsland',
+    legend_traceorder='reversed'  # Reverse the order of the legend
+    )
     
+    col1, col2 = st.columns(2)
+    col1.plotly_chart(fig_bar_grob, use_container_width=True, auto_open=False)
+    col2.plotly_chart(fig_donut_grob, use_container_width=True, auto_open=False)
+    st.caption(f"Abbildung 2: {selected_indicator} für die Gemeinde {selected_Gemeinde} (Zeitraum {start_year} - {end_year})")
+    st.plotly_chart(fig_area_grob, use_container_width=True, auto_open=False)
+    st.caption(f"Abbildung 3: {selected_indicator} pro Monat in der Gemeinde {selected_Gemeinde} von {start_year} - {end_year} nach Herkunftsland")
 
     st.plotly_chart(fig_bar, use_container_width=True, auto_open=False)
     st.caption(f"Abbildung 1: {selected_indicator} für die Gemeinde {selected_Gemeinde} nach Herkunftsland Absolut (Zeitraum {start_year} - {end_year})")
@@ -544,13 +540,13 @@ def create_other_page(df):
     st.caption(f"Abbildung 3: {selected_indicator} pro Monat in der Gemeinde {selected_Gemeinde} von {start_year} - {end_year} nach Herkunftsland")
 
     # Download CSV
-    csv = filtered_df.to_csv(index=False)
-    st.download_button(
-        label="Download data as CSV",
-        data=csv,
-        file_name='large_df.csv',
-        mime='text/csv'
-    )
+    #csv = filtered_df.to_csv(index=False)
+    #st.download_button(
+    #    label="Download data as CSV",
+    #   data=csv,
+    #   file_name='large_df.csv',
+    #    mime='text/csv'
+    #)
 
 
 def create_markt_page():
@@ -559,14 +555,106 @@ def create_markt_page():
     image = Image.open('under-construction.gif')
     st.image(image, caption='Coming Chritmas 2002')
 
-# Sidebar navigation
+
+
+#### Globale Datumsvariablen und Update BFS Logik 8 tag im Monat ###########
+# Calculate the cutoff date (last day of the month before the previous month
+current_date = datetime.date.today()
+
+if current_date.day < 8:
+    cutoff_date = datetime.date(current_date.year, current_date.month - 3, calendar.monthrange(current_date.year, current_date.month - 3)[1])
+else:
+    cutoff_date = datetime.date(current_date.year, current_date.month - 2, calendar.monthrange(current_date.year, current_date.month - 2)[1])
+
+# Define the date range for the slider
+start_date = datetime.date(2018, 1, 1)
+end_date = cutoff_date
+first_day_actual_month = cutoff_date.replace(day=1)
+
+start_year = start_date.year
+end_year = end_date.year
+
+###############################################
+
+
+######################
+# Sidebar navigation #
+######################
+
 st.sidebar.title("🇨🇭 Hotellerie Explorer")
 page = st.sidebar.selectbox("", ("Nach Gemeinde", "Nach Gemeinde und Herkunftsland"))
 st.sidebar.divider() 
-    
+
+#### Auswahl Gemeinde Global
+selected_Gemeinde = st.sidebar.selectbox('Auswahl Gemeinde', df_supply['Gemeinde'].unique(), index=0)
+
+
+##### Auswahl Zeithorizont und filterung DFs
+selected_years = st.sidebar.slider(
+    "Zeitraum:",
+    value=(start_year, end_year),
+    min_value=2013,  # Set the minimum value of the slider
+    max_value=end_year  # Set the maximum value of the slider
+)
+
+start_year = selected_years[0]
+end_year = selected_years[1]
+
+# Get the start_date and end_date based on the selection
+start_date = datetime.date(start_year, 1, 1)
+end_date = datetime.date(end_year, 12, 31)
+
+# Apply date filter to df Country
+df_country = df_country[(df_country['Jahr'] >= start_year) & (df_country['Jahr'] <= end_year)]
+first_day_actual_month = df_country['Date'].max()
+if end_date > first_day_actual_month:
+    end_date = first_day_actual_month
+
+# Apply date filter to df Supply 
+df_supply = df_supply[(df_supply['Jahr'] >= start_year) & (df_supply['Jahr'] <= end_year)]
+first_day_actual_month = df_supply['Date'].max()
+if end_date > first_day_actual_month:
+    end_date = first_day_actual_month
+
+
+#### Einstellungen
+st.sidebar.divider() 
+st.sidebar.write("")
+expander = st.sidebar.expander("Custom Colors")
+with expander:
+    col1, col2, col3, col4, col5 = st.columns(5)
+    color1 = col1.color_picker('1st', '#80bbad')
+    color2 = col2.color_picker('2nd', '#435254')
+    color3 = col3.color_picker('3rd', '#17e88f')
+    color4 = col4.color_picker('4th', '#dbd99a')
+    color5 = col5.color_picker('5th', '#5ab689')
+    color6 = col1.color_picker('6th', '#368c7a')
+    color7 = col2.color_picker('7th', '#93b886')
+    color8 = col3.color_picker('8th', '#779778')
+    color9 = col4.color_picker('9th', '#1ad3aa')
+    color10 = col5.color_picker('10th', '#c4c085')
+    color11 = col1.color_picker('11th', '#a6b481')
+    color12 = col2.color_picker('12th', '#15634d')
+    color13 = col3.color_picker('13th', '#00aa85')
+    color14 = col4.color_picker('14th', '#007754')
+    color15 = col5.color_picker('15th', '#abd4c8')
+    color16 = col1.color_picker('16th', '#d4c997')
+    color17 = col2.color_picker('17th', '#bebf7a')
+    color18 = col3.color_picker('18th', '#e2c48e')
+    color19 = col4.color_picker('19th', '#9db784')
+    color20 = col5.color_picker('20th', '#82a793')
+
+    custom_color_sequence = [
+        color1, color2, color3, color4, color5, color6, color7, color8, color9, color10,
+        color11, color12, color13, color14, color15, color16, color17, color18, color19, color20
+    ]
+
+
+#### Page Selection
+
 if page == "Nach Gemeinde":
-    create_main_page(df_supply)
+    create_main_page(df_supply,selected_Gemeinde)
 elif page == "Nach Gemeinde und Herkunftsland":
-    create_other_page(df_country)
+    create_other_page(df_country,selected_Gemeinde)
 elif page == "Gesamtmarkt":
     create_markt_page()
