@@ -205,6 +205,7 @@ def create_main_page(df,selected_Gemeinde):
     st.header("Logiernächte & Ankünfte",
               help="Logiernächte: Die Gesamtanzahl der Übernachtungen.\n\nAnkünfte: Die Gesamtanzahl der Gäste, die angekommen sind.",
               )
+    st.divider()
     
     col1, col2, col3 = st.columns(3)
 
@@ -290,7 +291,8 @@ def create_main_page(df,selected_Gemeinde):
     st.markdown('#')
     st.markdown('#')
 
-    st.header("Betriebe, Zimmer und Auslastung")
+    st.header("Betriebe, Zimmer & Auslastung")
+    st.divider()
 
 
     col1, col2, col3 = st.columns(3)
@@ -401,6 +403,9 @@ def create_other_page(df,selected_Gemeinde):
     #st.caption(f"Gemeinde: {selected_Gemeinde}")
     # Add a radio button to switch between Logiernächte and Ankünfte
     selected_indicator = st.selectbox('Auswahl Kennzahl', ["Logiernächte", "Ankünfte"], index=0)
+    st.divider()
+    st.header("Domestic vs. International")
+    st.divider()
 
     #######
     #######
@@ -478,20 +483,22 @@ def create_other_page(df,selected_Gemeinde):
     grouped_df_no_date_grob = grouped_df_grob.groupby('Herkunftsland_grob').agg({'Ankünfte': 'sum', 'Logiernächte': 'sum','Aufenthaltsdauer': 'mean'}).reset_index()
     grouped_df_date_grob = grouped_df_grob.groupby(['Herkunftsland_grob','Date']).agg({'Ankünfte': 'sum', 'Logiernächte': 'sum','Aufenthaltsdauer': 'mean'}).reset_index()
 
+    # Create a dictionary mapping values to specific colors
     fig_bar_grob = px.bar(
         grouped_df_no_date_grob,
         x='Herkunftsland_grob',
         y=y_column,
         color='Herkunftsland_grob',
         title="",
-        color_discrete_sequence=custom_color_sequence,
-    )
+        color_discrete_sequence=[color1,color2]
+        )
 
     fig_bar_grob.update_traces(
         hovertemplate='%{y}',
         texttemplate='%{y:,.0f}',  # Format the label to display the value with two decimal places
-        textposition='auto'  # Position the labels outside the bars
-        )
+        textposition='auto'
+    )
+
     fig_bar_grob.update_layout(
         legend_title='Herkunftsland',
         xaxis_title='',  # Hide the title of the x-axis
@@ -499,12 +506,14 @@ def create_other_page(df,selected_Gemeinde):
     )
 
     # Donut Chart
+    color_map = {'International': color2, 'Domestic': color1}
+
     fig_donut_grob = px.pie(
         grouped_df_no_date_grob,
         names='Herkunftsland_grob',
         values=y_column,
         hole=0.5,
-        color_discrete_sequence=custom_color_sequence,
+        color_discrete_sequence=[color_map[value] for value in grouped_df_no_date_grob['Herkunftsland_grob']]
     )
 
     fig_donut_grob.update_traces(textposition='inside', textinfo='percent')
@@ -518,7 +527,7 @@ def create_other_page(df,selected_Gemeinde):
         x='Date',
         y=y_column,
         color='Herkunftsland_grob',
-        color_discrete_sequence=custom_color_sequence
+        color_discrete_sequence=[color1,color2]
     )
     fig_area_grob.update_layout(
     legend_title='Herkunftsland',
@@ -532,6 +541,9 @@ def create_other_page(df,selected_Gemeinde):
     st.plotly_chart(fig_area_grob, use_container_width=True, auto_open=False)
     st.caption(f"Abbildung 3: {selected_indicator} pro Monat in der Gemeinde {selected_Gemeinde} von {start_year} - {end_year} nach Herkunftsland")
 
+
+    st.header("Top 15 Herkunftsländer")
+    st.divider()
     st.plotly_chart(fig_bar, use_container_width=True, auto_open=False)
     st.caption(f"Abbildung 1: {selected_indicator} für die Gemeinde {selected_Gemeinde} nach Herkunftsland Absolut (Zeitraum {start_year} - {end_year})")
     st.plotly_chart(fig_donut, use_container_width=True, auto_open=False)
