@@ -30,7 +30,7 @@ def load_data():
         cutoff_date = datetime.date(current_date.year, current_date.month - 2, calendar.monthrange(current_date.year, current_date.month - 2)[1])
 
     # Herkunftsland
-    url = "https://dam-api.bfs.admin.ch/hub/api/dam/assets/25805370/master"
+    url = "https://www.pxweb.bfs.admin.ch/DownloadFile.aspx?file=px-x-1003020000_101"
     px_data = pyaxis.parse(uri=url, encoding='ISO-8859-2')
     df_country = px_data['DATA']
 
@@ -41,7 +41,7 @@ def load_data():
     df_country = df_country.pivot(index=["Jahr", "Monat", "Gemeinde", "Herkunftsland"], columns="Indikator", values="DATA").reset_index()
 
     # Angebot und Nachfrage
-    url = "https://dam-api.bfs.admin.ch/hub/api/dam/assets/25805379/master"
+    url = "https://www.pxweb.bfs.admin.ch/DownloadFile.aspx?file=px-x-1003020000_201"
     px_data = pyaxis.parse(uri=url, encoding='ISO-8859-2')
     df_supply = px_data['DATA']
 
