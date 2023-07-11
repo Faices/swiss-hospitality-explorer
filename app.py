@@ -8,7 +8,7 @@ from PIL import Image
 import calendar
 
 # Set the page width
-st.set_page_config(layout="wide",page_title='Hotellerie Explorer (Beta)',page_icon= "🇨🇭")
+st.set_page_config(layout="wide",page_title='Hotellerie Explorer (Beta)',page_icon= "🇨🇭",initial_sidebar_state="auto")
 
 
 # Store data as a pandas dataframe
@@ -89,6 +89,16 @@ df_country,df_supply = load_data()
 
 
 def create_main_page(df,selected_Gemeinde):
+
+    # Add a placeholder at the beginning of the page to not jump to a section
+    top_placeholder = st.empty()
+    st.write(
+        f'<script>document.getElementById("{top_placeholder._id}").scrollIntoView();</script>',
+        unsafe_allow_html=True
+    )
+    st.title(f":flag-ch: Kennzahlen nach Gemeinde")
+    st.divider()
+
 
     # Sidebar for selecting specific Gemeinde
     #selected_Gemeinde = st.sidebar.selectbox('Auswahl Gemeinde', df['Gemeinde'].unique(), index=0)
@@ -195,9 +205,6 @@ def create_main_page(df,selected_Gemeinde):
     average_betriebe_current_month_last_year = filtered_df_2_current_month_last_year['Betriebe'].mean()
     average_betriebe_current_month_change = "{:,.0f}".format(average_betriebe_current_month - average_betriebe_current_month_last_year)
     
-    st.title(f":flag-ch: Kennzahlen nach Gemeinde")
-    st.divider()
-
     # Create two columns for metrics and line chart
     st.header("Logiernächte & Ankünfte",
               help="Logiernächte: Die Gesamtanzahl der Übernachtungen.\n\nAnkünfte: Die Gesamtanzahl der Gäste, die angekommen sind.",
@@ -285,9 +292,8 @@ def create_main_page(df,selected_Gemeinde):
     st.plotly_chart(fig_line, use_container_width=True, auto_open=True)
     st.caption(f"Abbildung 2: {selected_indicator_Ankünfte_Logiernächte} pro Monat in der Gemeinde {selected_Gemeinde} im Jahresvergleich")
 
-    st.markdown('#')
-    st.markdown('#')
 
+    st.divider()
     st.header("Betriebe, Zimmer & Auslastung")
     st.divider()
 
@@ -535,7 +541,7 @@ def create_other_page(df,selected_Gemeinde):
     st.plotly_chart(fig_area_grob, use_container_width=True, auto_open=False)
     st.caption(f"Abbildung 3: {selected_indicator} pro Monat in der Gemeinde {selected_Gemeinde} von {start_year} - {end_year} nach Herkunftsland")
 
-
+    st.divider()
     st.header("Top 15 Herkunftsländer")
     st.divider()
     st.plotly_chart(fig_bar, use_container_width=True, auto_open=False)
