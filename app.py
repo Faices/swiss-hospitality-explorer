@@ -93,10 +93,6 @@ def create_main_page(df,selected_Gemeinde):
     # Sidebar for selecting specific Gemeinde
     #selected_Gemeinde = st.sidebar.selectbox('Auswahl Gemeinde', df['Gemeinde'].unique(), index=0)
 
-    st.title(f":flag-ch: Kennzahlen nach Gemeinde")
-    st.divider()
-    #st.caption(f"Gemeinde: {selected_Gemeinde}")
-
     # Filter dataframe based on selected Gemeinde
     filtered_df_2 = df[df['Gemeinde'] == selected_Gemeinde]
 
@@ -199,7 +195,8 @@ def create_main_page(df,selected_Gemeinde):
     average_betriebe_current_month_last_year = filtered_df_2_current_month_last_year['Betriebe'].mean()
     average_betriebe_current_month_change = "{:,.0f}".format(average_betriebe_current_month - average_betriebe_current_month_last_year)
     
-    st.markdown('#')
+    st.title(f":flag-ch: Kennzahlen nach Gemeinde")
+    st.divider()
 
     # Create two columns for metrics and line chart
     st.header("Logiernächte & Ankünfte",
@@ -393,15 +390,12 @@ def create_main_page(df,selected_Gemeinde):
     col1.text("")
 
 def create_other_page(df,selected_Gemeinde):
-    #selected_Gemeinde = st.sidebar.selectbox('Auswahl Gemeinde', df['Gemeinde'].unique(), index=0)
-    
     # Filter dataframe based on selected Gemeinde
     filtered_df = df[df['Gemeinde'] == selected_Gemeinde]
-    #st.title(":flag-ch: Hotellerie Explorer")
+    
+    # Add a radio button to switch between Logiernächte and Ankünfte
     st.title(f":flag-ch: Kennzahlen nach Gemeinde und Herkunftsland")
     st.divider()
-    #st.caption(f"Gemeinde: {selected_Gemeinde}")
-    # Add a radio button to switch between Logiernächte and Ankünfte
     selected_indicator = st.selectbox('Auswahl Kennzahl', ["Logiernächte", "Ankünfte"], index=0)
     st.divider()
     st.header("Domestic vs. International")
