@@ -875,19 +875,19 @@ def create_other_page(df,selected_Gemeinde):
     col1, col2 = st.columns(2)
     col1.plotly_chart(fig_bar_grob, use_container_width=True, auto_open=False)
     col2.plotly_chart(fig_donut_grob, use_container_width=True, auto_open=False)
-    st.caption(f"Abbildung 2: {selected_indicator} für die Gemeinde {selected_Gemeinde} (Zeitraum {start_year} - {end_year})")
+    st.caption(f"Abbildung 1: {selected_indicator} für die Gemeinde {selected_Gemeinde} (Zeitraum {start_year} - {end_year})")
     st.plotly_chart(fig_area_grob, use_container_width=True, auto_open=False)
-    st.caption(f"Abbildung 3: {selected_indicator} pro Monat in der Gemeinde {selected_Gemeinde} von {start_year} - {end_year} nach Herkunftsland")
+    st.caption(f"Abbildung 2: {selected_indicator} pro Monat in der Gemeinde {selected_Gemeinde} von {start_year} - {end_year} nach Herkunftsland")
 
     st.divider()
     st.header("Top 15 Herkunftsländer")
     st.divider()
     st.plotly_chart(fig_bar, use_container_width=True, auto_open=False)
-    st.caption(f"Abbildung 1: {selected_indicator} für die Gemeinde {selected_Gemeinde} nach Herkunftsland Absolut (Zeitraum {start_year} - {end_year})")
+    st.caption(f"Abbildung 3: {selected_indicator} für die Gemeinde {selected_Gemeinde} nach Herkunftsland Absolut (Zeitraum {start_year} - {end_year})")
     st.plotly_chart(fig_donut, use_container_width=True, auto_open=False)
-    st.caption(f"Abbildung 2: {selected_indicator} für die Gemeinde {selected_Gemeinde} nach Herkunftsland in % (Zeitraum {start_year} - {end_year})")
+    st.caption(f"Abbildung 4: {selected_indicator} für die Gemeinde {selected_Gemeinde} nach Herkunftsland in % (Zeitraum {start_year} - {end_year})")
     st.plotly_chart(fig_area, use_container_width=True, auto_open=False)
-    st.caption(f"Abbildung 3: {selected_indicator} pro Monat in der Gemeinde {selected_Gemeinde} von {start_year} - {end_year} nach Herkunftsland")
+    st.caption(f"Abbildung 5: {selected_indicator} pro Monat in der Gemeinde {selected_Gemeinde} von {start_year} - {end_year} nach Herkunftsland")
 
 
     # Herkunftsland Dataframe
