@@ -4,3 +4,4 @@ plotly
 pyaxis
 python-dateutil
 numpy
+requests
