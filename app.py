@@ -7,10 +7,305 @@ import numpy as np
 from PIL import Image
 import calendar
 from streamlit import config
-import os
+import requests
+from io import BytesIO
 
 # Set the page width
 st.set_page_config(layout="wide",page_title='Hotellerie Explorer (Beta)',page_icon= "🇨🇭",initial_sidebar_state="auto")
+primaryColor="#80bbad" #for the map
+
+
+
+##########
+## Data ##
+##########
+
+## Kantonswappen Links ##
+kantonswappen = {
+        "Aargau":"https://upload.wikimedia.org/wikipedia/commons/b/b5/Wappen_Aargau_matt.svg",
+        "Appenzell Ausserrhoden":"https://upload.wikimedia.org/wikipedia/commons/2/2c/Wappen_Appenzell_Ausserrhoden_matt.svg",
+        "Appenzell Innerrhoden":"https://upload.wikimedia.org/wikipedia/commons/b/b7/Wappen_Appenzell_Innerrhoden_matt.svg",
+        "Basel-Landschaft":"https://upload.wikimedia.org/wikipedia/commons/8/8e/Coat_of_arms_of_Kanton_Basel-Landschaft.svg",
+        "Basel-Stadt":"https://upload.wikimedia.org/wikipedia/commons/7/7d/Wappen_Basel-Stadt_matt.svg",
+        "Bern / Berne":"https://upload.wikimedia.org/wikipedia/commons/4/47/Wappen_Bern_matt.svg",
+        "Fribourg / Freiburg":"https://upload.wikimedia.org/wikipedia/commons/0/01/Wappen_Freiburg_matt.svg",
+        "Genčve":"https://upload.wikimedia.org/wikipedia/commons/9/9d/Wappen_Genf_matt.svg",
+        "Glarus":"https://upload.wikimedia.org/wikipedia/commons/0/0e/Wappen_Glarus_matt.svg",
+        "Graubünden / Grigioni / Grischun":"https://upload.wikimedia.org/wikipedia/commons/c/c3/CHE_Graub%C3%BCnden_COA.svg",
+        "Jura":"https://upload.wikimedia.org/wikipedia/commons/f/f0/Wappen_Jura_matt.svg",
+        "Luzern":"https://upload.wikimedia.org/wikipedia/commons/6/66/Wappen_Luzern_matt.svg",
+        "Neuchâtel":"https://upload.wikimedia.org/wikipedia/commons/d/d1/Wappen_Neuenburg_matt.svg",
+        "Nidwalden":"https://upload.wikimedia.org/wikipedia/commons/b/bd/Wappen_Nidwalden_matt.svg",
+        "Obwalden":"https://upload.wikimedia.org/wikipedia/commons/1/1a/Wappen_Obwalden_matt.svg",
+        "Schaffhausen":"https://upload.wikimedia.org/wikipedia/commons/b/b6/Wappen_Schaffhausen_matt.svg",
+        "Schwyz":"https://upload.wikimedia.org/wikipedia/commons/e/ee/Wappen_Schwyz_matt.svg",
+        "Solothurn":"https://upload.wikimedia.org/wikipedia/commons/b/b7/Wappen_Solothurn_matt.svg",
+        "St. Gallen":"https://upload.wikimedia.org/wikipedia/commons/c/c5/Coat_of_arms_of_canton_of_St._Gallen.svg",
+        "Thurgau":"https://upload.wikimedia.org/wikipedia/commons/7/71/Wappen_Thurgau_matt.svg",
+        "Ticino":"https://upload.wikimedia.org/wikipedia/commons/8/87/Wappen_Tessin_matt.svg",
+        "Uri":"https://upload.wikimedia.org/wikipedia/commons/1/1c/Wappen_Uri_alt.svg",
+        "Valais / Wallis":"https://upload.wikimedia.org/wikipedia/commons/a/a3/Wappen_Wallis_matt.svg",
+        "Vaud":"https://upload.wikimedia.org/wikipedia/commons/1/1d/Wappen_Waadt_matt.svg",
+        "Zug":"https://upload.wikimedia.org/wikipedia/commons/3/31/Wappen_Zug_matt.svg",
+        "Zürich":"https://upload.wikimedia.org/wikipedia/commons/5/5a/Wappen_Z%C3%BCrich_matt.svg"
+    }
+
+## Flaggen Herkunfstländer Links imgur datachalet ##
+countryflags = {
+        'Argentinien':'https://i.imgur.com/OmRzePQ.png',
+        'Australien':'https://i.imgur.com/lHW5QxZ.png',
+        'Bahrain':'https://i.imgur.com/I2gftNU.png',
+        'Belarus':'https://i.imgur.com/O4NLELl.png',
+        'Belgien':'https://i.imgur.com/ZDpn1Vt.png',
+        'Brasilien':'https://i.imgur.com/WHZW2cY.png',
+        'Bulgarien':'https://i.imgur.com/SE0Q6O4.png',
+        'Chile':'https://i.imgur.com/RM0E81n.png',
+        'China':'https://i.imgur.com/PPUDcRk.png',
+       'Deutschland':'https://i.imgur.com/PzDbjZj.png',
+       'Dänemark':'https://i.imgur.com/pZxjdgN.png',
+       'Estland':'https://i.imgur.com/LDg9hR7.png',
+       'Finnland':'https://i.imgur.com/ZpExlat.png',
+       'Frankreich':'https://i.imgur.com/bNBCrOD.png',
+       'Griechenland':'https://i.imgur.com/sXOYiny.png',
+       'Hongkong':'https://i.imgur.com/V7dILEH.png',
+       'Indien':'https://i.imgur.com/mDiP4Ql.png',
+       'Indonesien':'https://i.imgur.com/6aDilJT.png',
+       'Irland':'https://i.imgur.com/DmALWSs.png',
+       'Island':'https://i.imgur.com/EWUKoaA.png',
+       'Israel':'https://i.imgur.com/bDpPHab.png',
+       'Italien':'https://i.imgur.com/nayEcox.png',
+       'Japan':'https://i.imgur.com/fUG4O1B.png',
+       'Kanada':'https://i.imgur.com/DFxUgyd.png',
+       'Katar':'https://i.imgur.com/Lf6Nkhf.png',
+       'Korea (Süd-)':'https://i.imgur.com/PCSjKxj.png',
+       'Kroatien':'https://i.imgur.com/2mGxQ9X.png',
+       'Kuwait':'https://i.imgur.com/FZ75488.png',
+       'Lettland':'https://i.imgur.com/MHVKDx8.png',
+       'Liechtenstein':'https://i.imgur.com/Y3AUCgh.png',
+       'Litauen':'https://i.imgur.com/kbBDHHx.png',
+       'Luxemburg':'https://i.imgur.com/bVOTFzy.png',
+       'Malaysia':'https://i.imgur.com/Em9DRQh.png',
+       'Malta':'https://i.imgur.com/zimgcU2.png',
+       'Mexiko':'https://i.imgur.com/EpBKADW.png',
+       'Neuseeland, Ozeanien':'https://i.imgur.com/FaYARI7.png',
+       'Niederlande':'https://i.imgur.com/kpss3hN.png',
+       'Norwegen':'https://i.imgur.com/83YrW63.png',
+       'Oman':'https://i.imgur.com/qEd1B25.png',
+       'Philippinen':'https://i.imgur.com/AEoCDDZ.png',
+       'Polen':'https://i.imgur.com/aFbc1N2.png',
+       'Portugal':'https://i.imgur.com/KXWaiNP.png',
+       'Rumänien':'https://i.imgur.com/udw6D75.png',
+       'Russland':'https://i.imgur.com/BuA1Xu1.png',
+       'Saudi-Arabien':'https://i.imgur.com/fAD7rTs.png',
+       'Schweden':'https://i.imgur.com/vZZKBuW.png',
+       'Schweiz':'https://i.imgur.com/QWX5ZLR.png',
+       'Serbien':'https://i.imgur.com/5Y0csmY.png',
+       'Singapur':'https://i.imgur.com/6vSQ0Hm.png',
+       'Slowakei':'https://i.imgur.com/y4AwaR0.png',
+       'Slowenien':'https://i.imgur.com/AhkCIrb.png',
+       'Spanien':'https://i.imgur.com/yJYg5B5.png',
+       'Südafrika':'https://i.imgur.com/mDdZT8Z.png',
+       'Taiwan (Chinesisches Taipei)':'https://i.imgur.com/csGkEsT.png',
+       'Thailand':'https://i.imgur.com/RDgnXvP.png',
+       'Tschechien':'https://i.imgur.com/6cXJIrh.png',
+       'Türkei':'https://i.imgur.com/Z3H1sGU.png',
+       'Ukraine':'https://i.imgur.com/EG8mJFE.png',
+       'Ungarn':'https://i.imgur.com/4XAgkq1.png',
+       'Vereinigte Arabische Emirate':'https://i.imgur.com/VgcPA54.png',
+       'Vereinigte Staaten':'https://i.imgur.com/dMmEpIa.png',
+       'Vereinigtes Königreich':'https://i.imgur.com/h5on67v.png',
+       'Zypern':'https://upload.wikimedia.org/wikipedia/commons/d/d4/Flag_of_Cyprus.svg',
+       'Ägypten':'https://i.imgur.com/SdhPKH1.png',
+       'Österreich':'https://i.imgur.com/TRNRlAv.png',
+       'Übriges Afrika':'',
+       'Übriges Europa':'https://i.imgur.com/sMKYRfd.png',
+       'Übriges Nordafrika':'',
+       'Übriges Süd- und Ostasien':'',
+       'Übriges Südamerika':'',
+       'Übriges Westasien':'',
+       'Übriges Zentralamerika, Karibik':''
+    }
+
+
+gemeinde_kanton_mapping = {
+    'Zürich': 'Zürich',
+    'Samedan': 'Graubünden / Grigioni / Grischun',
+    'Sachseln': 'Obwalden',
+    'Saas-Fee': 'Valais / Wallis',
+    'Saanen': 'Bern / Berne',
+    'Quarten': 'St. Gallen',
+    'Pratteln': 'Basel-Landschaft',
+    'Pontresina': 'Graubünden / Grigioni / Grischun',
+    'Paradiso': 'Ticino',
+    'Ormont-Dessus': 'Vaud',
+    'Opfikon': 'Zürich',
+    'Olten': 'Solothurn',
+    'Ollon': 'Vaud',
+    'Neuchâtel': 'Neuchâtel',
+    'Muralto': 'Ticino',
+    'Morschach': 'Schwyz',
+    'Morges': 'Vaud',
+    'Montreux': 'Vaud',
+    'Minusio': 'Ticino',
+    'Meyrin': 'Genčve',
+    'Meiringen': 'Bern',
+    'Matten bei Interlaken': 'Bern',
+    'Samnaun': 'Graubünden / Grigioni / Grischun',
+    'Luzern': 'Luzern',
+    'Schaffhausen': 'Schaffhausen',
+    'Scuol': 'Graubünden / Grigioni / Grischun',
+    'Zernez': 'Graubünden / Grigioni / Grischun',
+    'Zermatt': 'Valais / Wallis',
+    'Winterthur': 'Zürich',
+    'Wildhaus-Alt St. Johann': 'St. Gallen',
+    'Wilderswil': 'Bern',
+    'Weggis': 'Luzern',
+    'Vevey': 'Vaud',
+    'Vaz/Obervaz': 'Graubünden / Grigioni / Grischun',
+    'Vals': 'Graubünden / Grigioni / Grischun',
+    'Val de Bagnes': 'Valais / Wallis',
+    'Unterseen': 'Bern',
+    'Täsch': 'Valais / Wallis',
+    'Thun': 'Bern',
+    'St. Moritz': 'Graubünden / Grigioni / Grischun',
+    'St. Gallen': 'St. Gallen',
+    'Spiez': 'Bern',
+    'Solothurn': 'Solothurn',
+    'Sion': 'Valais / Wallis',
+    'Silvaplana': 'Graubünden / Grigioni / Grischun',
+    'Sils im Engadin/Segl': 'Graubünden / Grigioni / Grischun',
+    'Sigriswil': 'Bern',
+    'Schwende-Rüte': 'Appenzell Ausserrhoden',
+    'Zug': 'Zug',
+    'Lugano': 'Ticino',
+    'Leytron': 'Valais / Wallis',
+    'Einsiedeln': 'Schwyz',
+    'Disentis/Mustér': 'Grisons',
+    'Davos': 'Graubünden / Grigioni / Grischun',
+    'Crans-Montana': 'Valais / Wallis',
+    'Chur': 'Graubünden / Grigioni / Grischun',
+    'Celerina/Schlarigna': 'Graubünden / Grigioni / Grischun',
+    'Bulle': 'Fribourg / Freiburg',
+    'Brig-Glis': 'Valais / Wallis',
+    'Brienz (BE)': 'Bern',
+    'Biel/Bienne': 'Bern',
+    'Bern': 'Bern / Berne',
+    'Bellinzona': 'Ticino',
+    'Beatenberg': 'Bern',
+    'Basel': 'Basel-Stadt',
+    'Baden': 'Aargau',
+    'Bad Ragaz': 'St. Gallen',
+    'Ascona': 'Ticino',
+    'Arosa': 'Graubünden / Grigioni / Grischun',
+    'Anniviers': 'Valais / Wallis',
+    'Andermatt': 'Uri',
+    'Adelboden': 'Bern',
+    'Engelberg': 'Obwalden',
+    'Locarno': 'Ticino',
+    'Feusisberg': 'Schwyz',
+    'Freienbach': 'Schwyz',
+    'Leysin': 'Vaud',
+    'Leukerbad': 'Valais / Wallis',
+    'Lenk': 'Bern',
+    'Lauterbrunnen': 'Bern',
+    'Lausanne': 'Vaud',
+    'Laax': 'Graubünden / Grigioni / Grischun',
+    'Küssnacht (SZ)': 'Schwyz',
+    'Kriens': 'Luzern',
+    'Kloten': 'Zürich',
+    'Klosters-Serneus': 'Graubünden / Grigioni / Grischun',
+    'Kerns': 'Obwalden',
+    'Kandersteg': 'Bern',
+    'Interlaken': 'Bern',
+    'Ingenbohl': 'Schwyz',
+    'Hasliberg': 'Bern',
+    'Grindelwald': 'Bern',
+    'Glarus Süd': 'Glarus',
+    'Glarus Nord': 'Glarus',
+    'Genčve': 'Genčve',
+    'Gambarogno': 'Ticino',
+    'Fribourg': 'Fribourg / Freiburg',
+    'Flims': 'Graubünden / Grigioni / Grischun',
+    'Zurzach': 'Aargau',
+    'Martigny': 'Valais / Wallis'
+}
+
+
+country_mapping = {
+    'Argentinien': 'ARG',
+    'Australien': 'AUS',
+    'Bahrain': 'BHR',
+    'Belarus': 'BLR',
+    'Belgien': 'BEL',
+    'Brasilien': 'BRA',
+    'Bulgarien': 'BGR',
+    'Chile': 'CHL',
+    'China': 'CHN',
+    'Deutschland': 'DEU',
+    'Dänemark': 'DNK',
+    'Estland': 'EST',
+    'Finnland': 'FIN',
+    'Frankreich': 'FRA',
+    'Griechenland': 'GRC',
+    'Hongkong': 'HKG',
+    'Indien': 'IND',
+    'Indonesien': 'IDN',
+    'Irland': 'IRL',
+    'Island': 'ISL',
+    'Israel': 'ISR',
+    'Italien': 'ITA',
+    'Japan': 'JPN',
+    'Kanada': 'CAN',
+    'Katar': 'QAT',
+    'Korea (Süd-)': 'KOR',
+    'Kroatien': 'HRV',
+    'Kuwait': 'KWT',
+    'Lettland': 'LVA',
+    'Liechtenstein': 'LIE',
+    'Litauen': 'LTU',
+    'Luxemburg': 'LUX',
+    'Malaysia': 'MYS',
+    'Malta': 'MLT',
+    'Mexiko': 'MEX',
+    'Neuseeland, Ozeanien': 'NZL',
+    'Niederlande': 'NLD',
+    'Norwegen': 'NOR',
+    'Oman': 'OMN',
+    'Philippinen': 'PHL',
+    'Polen': 'POL',
+    'Portugal': 'PRT',
+    'Rumänien': 'ROU',
+    'Russland': 'RUS',
+    'Saudi-Arabien': 'SAU',
+    'Schweden': 'SWE',
+    'Schweiz': 'CHE',
+    'Serbien': 'SRB',
+    'Singapur': 'SGP',
+    'Slowakei': 'SVK',
+    'Slowenien': 'SVN',
+    'Spanien': 'ESP',
+    'Südafrika': 'ZAF',
+    'Taiwan (Chinesisches Taipei)': 'TWN',
+    'Thailand': 'THA',
+    'Tschechien': 'CZE',
+    'Türkei': 'TUR',
+    'Ukraine': 'UKR',
+    'Ungarn': 'HUN',
+    'Vereinigte Arabische Emirate': 'ARE',
+    'Vereinigte Staaten': 'USA',
+    'Vereinigtes Königreich': 'GBR',
+    'Zypern': 'CYP',
+    'Ägypten': 'EGY',
+    'Österreich': 'AUT',
+    'Übriges Afrika': 'AFR',
+    'Übriges Europa': 'EUR',
+    'Übriges Nordafrika': 'NAF',
+    'Übriges Süd- und Ostasien': 'SOA',
+    'Übriges Südamerika': 'SAM',
+    'Übriges Westasien': 'WAS',
+    'Übriges Zentralamerika, Karibik': 'ZAK'
+}
+
 
 # Store data as a pandas dataframe
 @st.cache_data
@@ -116,21 +411,30 @@ df_country,df_supply, df_kanton = load_data()
 
 def create_main_page(df,selected_Gemeinde):
 
+
     # Add a placeholder at the beginning of the page to not jump to a section
     top_placeholder = st.empty()
     st.write(
         f'<script>document.getElementById("{top_placeholder._id}").scrollIntoView();</script>',
         unsafe_allow_html=True
     )
-    st.title(f":flag-ch: Kennzahlen nach Gemeinde")
+
+     # Filter dataframe based on selected Gemeinde
+    filtered_df_2 = df[df['Gemeinde'] == selected_Gemeinde]
+
+    # map kantonicons to df
+    filtered_df_2.insert(0, "Kanton", filtered_df_2['Gemeinde'].map(gemeinde_kanton_mapping))
+    filtered_df_2.insert(0, "Wappen", filtered_df_2['Kanton'].map(kantonswappen))
+    wappen_url = filtered_df_2['Wappen'].iloc[0]
+
+    
+    col1, col2, col3 = st.columns(3)
+    #st.title(":flag-ch: Hotellerie Explorer")
+    col1.image(wappen_url,width=60)
+
+    st.title(f"Kennzahlen für die Gemeinde {selected_Gemeinde}")
     st.divider()
 
-
-    # Sidebar for selecting specific Gemeinde
-    #selected_Gemeinde = st.sidebar.selectbox('Auswahl Gemeinde', df['Gemeinde'].unique(), index=0)
-
-    # Filter dataframe based on selected Gemeinde
-    filtered_df_2 = df[df['Gemeinde'] == selected_Gemeinde]
 
     ##########
     ##########
@@ -416,17 +720,25 @@ def create_main_page(df,selected_Gemeinde):
 
     st.plotly_chart(fig_line, use_container_width=True, auto_open=False)
     st.caption(f"Abbildung 4: {selected_indicator} pro Monat in der Gemeinde {selected_Gemeinde} im Jahresvergleich")
-
-    # Create two columns for metrics and line chart
-    col1, col2, col3, col4, col5, col6 ,col7, col8 = st.columns(8)
-    col1.text("")
+    st.divider()
+    st.caption("with :heart: by Datachalet")
 
 def create_other_page(df,selected_Gemeinde):
     # Filter dataframe based on selected Gemeinde
     filtered_df = df[df['Gemeinde'] == selected_Gemeinde]
+
+    # map kantonicons to df
+    filtered_df.insert(0, "Kanton", filtered_df['Gemeinde'].map(gemeinde_kanton_mapping))
+    filtered_df.insert(0, "Wappen", filtered_df['Kanton'].map(kantonswappen))
+    wappen_url = filtered_df['Wappen'].iloc[0]
+
+    
+    col1, col2, col3 = st.columns(3)
+    #st.title(":flag-ch: Hotellerie Explorer")
+    col1.image(wappen_url,width=60)
     
     # Add a radio button to switch between Logiernächte and Ankünfte
-    st.title(f":flag-ch: Kennzahlen nach Gemeinde und Herkunftsland")
+    st.title(f"Kennzahlen für die Gemeinde {selected_Gemeinde} nach Herkunftsland")
     st.divider()
     selected_indicator = st.selectbox('Auswahl Kennzahl', ["Logiernächte", "Ankünfte"], index=0)
     st.divider()
@@ -577,6 +889,37 @@ def create_other_page(df,selected_Gemeinde):
     st.plotly_chart(fig_area, use_container_width=True, auto_open=False)
     st.caption(f"Abbildung 3: {selected_indicator} pro Monat in der Gemeinde {selected_Gemeinde} von {start_year} - {end_year} nach Herkunftsland")
 
+
+    # Herkunftsland Dataframe
+    grouped_df_Herkunftsland = filtered_df.groupby(['Date','Monat','Jahr','Herkunftsland']).agg({selected_indicator: 'sum'}).reset_index()
+    grouped_df_Herkunftsland = grouped_df_Herkunftsland.groupby('Herkunftsland').agg({selected_indicator: list}).reset_index()
+    grouped_df_Herkunftsland[f"{selected_indicator} Total"] = grouped_df_Herkunftsland[selected_indicator].apply(lambda x: sum(x))
+    grouped_df_Herkunftsland[f"{selected_indicator} Anteil"] = ((100 / sum(grouped_df_Herkunftsland[f"{selected_indicator} Total"])) * grouped_df_Herkunftsland[f"{selected_indicator} Total"]).apply(lambda x: f"{x:.2f}%")
+    grouped_df_Herkunftsland.insert(0, "Flagge", grouped_df_Herkunftsland['Herkunftsland'].map(countryflags))
+    grouped_df_Herkunftsland = grouped_df_Herkunftsland.sort_values(f"{selected_indicator} Total",ascending=False)
+
+
+    st.dataframe(
+        grouped_df_Herkunftsland,
+        column_config={
+            "Flagge": st.column_config.ImageColumn("Flagge"),
+            "Herkunftsland": "Herkunftsland",
+            selected_indicator: st.column_config.LineChartColumn(
+                selected_indicator),
+            f"{selected_indicator} Anteil":st.column_config.ProgressColumn(
+        f"{selected_indicator} Anteil",
+            help="% zum Gesamtmarkt",
+            min_value=0,
+            max_value=1,
+        ),
+
+        },
+        hide_index=True,
+        use_container_width = True
+    )
+    st.caption(f"Abbildung 4: {selected_indicator} für die Gemeinde {selected_Gemeinde} von {start_year} - {end_year} nach Herkunftsland")
+
+
     # Download CSV
     #csv = filtered_df.to_csv(index=False)
     #st.download_button(
@@ -585,11 +928,24 @@ def create_other_page(df,selected_Gemeinde):
     #   file_name='large_df.csv',
     #    mime='text/csv'
     #)
+    st.divider()
+    st.caption("with :heart: by Datachalet")
 
 
 def create_markt_page(df):
+    
+    url = 'https://i.imgur.com/QWX5ZLR.png'  # URL of the image you want to resiz
+    desired_width = 60  # Desired width in pixels
+    
+    response = requests.get(url)
+    image = Image.open(BytesIO(response.content))
+    resized_image = image.resize((desired_width, int(desired_width * image.size[1] / image.size[0])))
+    col1, col2, col3 = st.columns(3)
     #st.title(":flag-ch: Hotellerie Explorer")
-    st.title(f":flag-ch: Kennzahlen Gesamtmarkt")
+    col1.image(resized_image,use_column_width="auto")
+
+
+    st.title(f"Kennzahlen Gesamtmarkt")
     df = df.sort_values('Date')
 
     # Metrics Avererges whole time
@@ -752,115 +1108,12 @@ def create_markt_page(df):
         legend_title_text=''  # Hide the title of the x-axis
     )
     st.plotly_chart(fig_line, use_container_width=True, auto_open=True)
-    st.caption(f"Abbildung 2: {selected_indicator_Ankünfte_Logiernächte} pro Monat im Jahresvergleich")
+    st.caption(f"Abbildung 2: {selected_indicator_Ankünfte_Logiernächte} pro Monat im Jahresvergleich von {earliest_year} - {most_recent_year}")
 
-    kantonswappen = {
-        "Aargau":"https://upload.wikimedia.org/wikipedia/commons/b/b5/Wappen_Aargau_matt.svg",
-        "Appenzell Ausserrhoden":"https://upload.wikimedia.org/wikipedia/commons/2/2c/Wappen_Appenzell_Ausserrhoden_matt.svg",
-        "Appenzell Innerrhoden":"https://upload.wikimedia.org/wikipedia/commons/b/b7/Wappen_Appenzell_Innerrhoden_matt.svg",
-        "Basel-Landschaft":"https://upload.wikimedia.org/wikipedia/commons/8/8e/Coat_of_arms_of_Kanton_Basel-Landschaft.svg",
-        "Basel-Stadt":"https://upload.wikimedia.org/wikipedia/commons/7/7d/Wappen_Basel-Stadt_matt.svg",
-        "Bern / Berne":"https://upload.wikimedia.org/wikipedia/commons/4/47/Wappen_Bern_matt.svg",
-        "Fribourg / Freiburg":"https://upload.wikimedia.org/wikipedia/commons/0/01/Wappen_Freiburg_matt.svg",
-        "Genčve":"https://upload.wikimedia.org/wikipedia/commons/9/9d/Wappen_Genf_matt.svg",
-        "Glarus":"https://upload.wikimedia.org/wikipedia/commons/0/0e/Wappen_Glarus_matt.svg",
-        "Graubünden / Grigioni / Grischun":"https://upload.wikimedia.org/wikipedia/commons/c/c3/CHE_Graub%C3%BCnden_COA.svg",
-        "Jura":"https://upload.wikimedia.org/wikipedia/commons/f/f0/Wappen_Jura_matt.svg",
-        "Luzern":"https://upload.wikimedia.org/wikipedia/commons/6/66/Wappen_Luzern_matt.svg",
-        "Neuchâtel":"https://upload.wikimedia.org/wikipedia/commons/d/d1/Wappen_Neuenburg_matt.svg",
-        "Nidwalden":"https://upload.wikimedia.org/wikipedia/commons/b/bd/Wappen_Nidwalden_matt.svg",
-        "Obwalden":"https://upload.wikimedia.org/wikipedia/commons/1/1a/Wappen_Obwalden_matt.svg",
-        "Schaffhausen":"https://upload.wikimedia.org/wikipedia/commons/b/b6/Wappen_Schaffhausen_matt.svg",
-        "Schwyz":"https://upload.wikimedia.org/wikipedia/commons/e/ee/Wappen_Schwyz_matt.svg",
-        "Solothurn":"https://upload.wikimedia.org/wikipedia/commons/b/b7/Wappen_Solothurn_matt.svg",
-        "St. Gallen":"https://upload.wikimedia.org/wikipedia/commons/c/c5/Coat_of_arms_of_canton_of_St._Gallen.svg",
-        "Thurgau":"https://upload.wikimedia.org/wikipedia/commons/7/71/Wappen_Thurgau_matt.svg",
-        "Ticino":"https://upload.wikimedia.org/wikipedia/commons/8/87/Wappen_Tessin_matt.svg",
-        "Uri":"https://upload.wikimedia.org/wikipedia/commons/1/1c/Wappen_Uri_alt.svg",
-        "Valais / Wallis":"https://upload.wikimedia.org/wikipedia/commons/a/a3/Wappen_Wallis_matt.svg",
-        "Vaud":"https://upload.wikimedia.org/wikipedia/commons/1/1d/Wappen_Waadt_matt.svg",
-        "Zug":"https://upload.wikimedia.org/wikipedia/commons/3/31/Wappen_Zug_matt.svg",
-        "Zürich":"https://upload.wikimedia.org/wikipedia/commons/5/5a/Wappen_Z%C3%BCrich_matt.svg"
-    }
-
-    countryflags = {
-        'Argentinien':'https://upload.wikimedia.org/wikipedia/commons/1/1a/Flag_of_Argentina.svg',
-        'Australien':'https://upload.wikimedia.org/wikipedia/commons/8/88/Flag_of_Australia_%28converted%29.svg',
-        'Bahrain':'https://upload.wikimedia.org/wikipedia/commons/2/2c/Flag_of_Bahrain.svg',
-        'Belarus':'https://upload.wikimedia.org/wikipedia/commons/8/85/Flag_of_Belarus.svg',
-        'Belgien':'https://upload.wikimedia.org/wikipedia/commons/6/65/Flag_of_Belgium.svg',
-        'Brasilien':'https://upload.wikimedia.org/wikipedia/commons/0/05/Flag_of_Brazil.svg',
-        'Bulgarien':'https://upload.wikimedia.org/wikipedia/commons/9/9a/Flag_of_Bulgaria.svg',
-        'Chile':'https://upload.wikimedia.org/wikipedia/commons/7/78/Flag_of_Chile.svg',
-        'China':'https://upload.wikimedia.org/wikipedia/commons/f/fa/Flag_of_the_People%27s_Republic_of_China.svg',
-       'Deutschland':'germany--3653.svg',
-       'Dänemark':'https://upload.wikimedia.org/wikipedia/commons/9/9c/Flag_of_Denmark.svg',
-       'Estland':'https://upload.wikimedia.org/wikipedia/commons/8/8f/Flag_of_Estonia.svg',
-       'Finnland':'https://upload.wikimedia.org/wikipedia/commons/b/bc/Flag_of_Finland.svg',
-       'Frankreich':'https://upload.wikimedia.org/wikipedia/commons/b/bc/Flag_of_France_%281794%E2%80%931815%2C_1830%E2%80%931974%2C_2020%E2%80%93present%29.svg',
-       'Griechenland':'https://upload.wikimedia.org/wikipedia/commons/5/5c/Flag_of_Greece.svg',
-       'Hongkong':'https://upload.wikimedia.org/wikipedia/commons/5/5b/Flag_of_Hong_Kong.svg',
-       'Indien':'https://upload.wikimedia.org/wikipedia/commons/4/41/Flag_of_India.svg',
-       'Indonesien':'https://upload.wikimedia.org/wikipedia/commons/9/9f/Flag_of_Indonesia.svg',
-       'Irland':'https://upload.wikimedia.org/wikipedia/commons/4/45/Flag_of_Ireland.svg',
-       'Island':'https://upload.wikimedia.org/wikipedia/commons/c/ce/Flag_of_Iceland.svg',
-       'Israel':'https://upload.wikimedia.org/wikipedia/commons/d/d4/Flag_of_Israel.svg',
-       'Italien':'https://upload.wikimedia.org/wikipedia/commons/0/03/Flag_of_Italy.svg',
-       'Japan':'https://upload.wikimedia.org/wikipedia/commons/9/9e/Flag_of_Japan.svg',
-       'Kanada':'https://upload.wikimedia.org/wikipedia/commons/d/d9/Flag_of_Canada_%28Pantone%29.svg',
-       'Katar':'https://upload.wikimedia.org/wikipedia/commons/6/65/Flag_of_Qatar.svg',
-       'Korea (Süd-)':'https://upload.wikimedia.org/wikipedia/commons/0/09/Flag_of_South_Korea.svg',
-       'Kroatien':'https://upload.wikimedia.org/wikipedia/commons/5/51/Flag_of_North_Korea.svg',
-       'Kuwait':'https://upload.wikimedia.org/wikipedia/commons/a/aa/Flag_of_Kuwait.svg',
-       'Lettland':'https://upload.wikimedia.org/wikipedia/commons/a/aa/Flag_of_Kuwait.svg',
-       'Liechtenstein':'https://upload.wikimedia.org/wikipedia/commons/4/47/Flag_of_Liechtenstein.svg',
-       'Litauen':'https://upload.wikimedia.org/wikipedia/commons/1/11/Flag_of_Lithuania.svg',
-       'Luxemburg':'https://upload.wikimedia.org/wikipedia/commons/d/da/Flag_of_Luxembourg.svg',
-       'Malaysia':'https://upload.wikimedia.org/wikipedia/commons/6/66/Flag_of_Malaysia.svg',
-       'Malta':'https://upload.wikimedia.org/wikipedia/commons/7/73/Flag_of_Malta.svg',
-       'Mexiko':'https://upload.wikimedia.org/wikipedia/commons/f/fc/Flag_of_Mexico.svg',
-       'Neuseeland, Ozeanien':'https://upload.wikimedia.org/wikipedia/commons/3/3e/Flag_of_New_Zealand.svg',
-       'Niederlande':'https://upload.wikimedia.org/wikipedia/commons/2/20/Flag_of_the_Netherlands.svg',
-       'Norwegen':'https://upload.wikimedia.org/wikipedia/commons/d/d9/Flag_of_Norway.svg',
-       'Oman':'https://upload.wikimedia.org/wikipedia/commons/d/dd/Flag_of_Oman.svg',
-       'Philippinen':'https://upload.wikimedia.org/wikipedia/commons/9/99/Flag_of_the_Philippines.svg',
-       'Polen':'https://upload.wikimedia.org/wikipedia/commons/1/12/Flag_of_Poland.svg',
-       'Portugal':'https://upload.wikimedia.org/wikipedia/commons/5/5c/Flag_of_Portugal.svg',
-       'Rumänien':'https://upload.wikimedia.org/wikipedia/commons/7/73/Flag_of_Romania.svg',
-       'Russland':'https://upload.wikimedia.org/wikipedia/commons/f/f3/Flag_of_Russia.svg',
-       'Saudi-Arabien':'https://upload.wikimedia.org/wikipedia/commons/0/0d/Flag_of_Saudi_Arabia.svg',
-       'Schweden':'https://upload.wikimedia.org/wikipedia/commons/4/4c/Flag_of_Sweden.svg',
-       'Schweiz':'https://upload.wikimedia.org/wikipedia/commons/f/f3/Flag_of_Switzerland.svg',
-       'Serbien':'https://upload.wikimedia.org/wikipedia/commons/f/ff/Flag_of_Serbia.svg',
-       'Singapur':'https://upload.wikimedia.org/wikipedia/commons/4/48/Flag_of_Singapore.svg',
-       'Slowakei':'https://upload.wikimedia.org/wikipedia/commons/e/e6/Flag_of_Slovakia.svg',
-       'Slowenien':'https://upload.wikimedia.org/wikipedia/commons/f/f0/Flag_of_Slovenia.svg',
-       'Spanien':'https://upload.wikimedia.org/wikipedia/commons/9/9a/Flag_of_Spain.svg',
-       'Südafrika':'https://upload.wikimedia.org/wikipedia/commons/a/af/Flag_of_South_Africa.svg',
-       'Taiwan (Chinesisches Taipei)':'https://upload.wikimedia.org/wikipedia/commons/7/72/Flag_of_the_Republic_of_China.svg',
-       'Thailand':'https://upload.wikimedia.org/wikipedia/commons/a/a9/Flag_of_Thailand.svg',
-       'Tschechien':'https://upload.wikimedia.org/wikipedia/commons/c/cb/Flag_of_the_Czech_Republic.svg',
-       'Türkei':'https://upload.wikimedia.org/wikipedia/commons/b/b4/Flag_of_Turkey.svg',
-       'Ukraine':'https://upload.wikimedia.org/wikipedia/commons/4/49/Flag_of_Ukraine.svg',
-       'Ungarn':'https://upload.wikimedia.org/wikipedia/commons/c/c1/Flag_of_Hungary.svg',
-       'Vereinigte Arabische Emirate':'https://upload.wikimedia.org/wikipedia/commons/c/cb/Flag_of_the_United_Arab_Emirates.svg',
-       'Vereinigte Staaten':'https://upload.wikimedia.org/wikipedia/commons/a/a4/Flag_of_the_United_States.svg',
-       'Vereinigtes Königreich':'https://upload.wikimedia.org/wikipedia/commons/8/83/Flag_of_the_United_Kingdom_%283-5%29.svg',
-       'Zypern':'https://upload.wikimedia.org/wikipedia/commons/d/d4/Flag_of_Cyprus.svg',
-       'Ägypten':'https://upload.wikimedia.org/wikipedia/commons/f/fe/Flag_of_Egypt.svg',
-       'Österreich':'https://upload.wikimedia.org/wikipedia/commons/4/41/Flag_of_Austria.svg',
-       'Übriges Afrika':'',
-       'Übriges Europa':'',
-       'Übriges Nordafrika':'',
-       'Übriges Süd- und Ostasien':'',
-       'Übriges Südamerika':'',
-       'Übriges Westasien':'',
-       'Übriges Zentralamerika, Karibik':''
-    }
 
 
     # Kantons Dataframe
-    st.subheader("Entwicklung Kantöne")
+    st.subheader("Entwicklung nach Kanton")
     selected_indicator_Ankünfte_Logiernächte_2 = st.selectbox('Auswahl Kennzahl', ["Logiernächte", "Ankünfte"], index=0,key='selected_indicator_Ankünfte_Logiernächte_2')
     grouped_df_kanton = df.groupby(['Date','Monat','Jahr','Kanton']).agg({selected_indicator_Ankünfte_Logiernächte_2: 'sum'}).reset_index()
     grouped_df_kanton = grouped_df_kanton.groupby('Kanton').agg({selected_indicator_Ankünfte_Logiernächte_2: list}).reset_index()
@@ -887,10 +1140,58 @@ def create_markt_page(df):
         hide_index=True,
         use_container_width = True
     )
+    st.caption(f"Abbildung 3: {selected_indicator_Ankünfte_Logiernächte} nach Kanton von {earliest_year} - {most_recent_year}")
+
+    ##### Herkunftsland Map ####
+    st.subheader("Entwicklung nach Herkunftsland")
+    selected_indicator_Ankünfte_Logiernächte_3 = st.selectbox('Auswahl Kennzahl', ["Logiernächte", "Ankünfte"], index=0,key='selected_indicator_Ankünfte_Logiernächte_3')
+
+
+    # Add ISO codes to the country data
+    country_totals = df.groupby('Herkunftsland')[selected_indicator_Ankünfte_Logiernächte_3].sum().reset_index()
+
+
+    iso_codes = []
+    for country in country_totals['Herkunftsland']:
+        iso_code = country_mapping.get(country)
+        iso_codes.append(iso_code)
+
+    country_totals['ISO_Code'] = iso_codes
+    # Drop Switzerland from the dataframe
+    country_totals = country_totals[country_totals['ISO_Code'] != 'CHE']
+
+
+
+    import plotly.graph_objects as go
+
+    fig = go.Figure(data=go.Choropleth(
+        locations=country_totals['ISO_Code'],
+        z=country_totals[selected_indicator_Ankünfte_Logiernächte_3].astype(float),
+        colorscale='mint',
+        text=country_totals['Herkunftsland'], # hover text
+        marker_line_color='white'# line markers between states
+
+    ))
+
+    # Update the map layout
+    fig.update_geos(
+        showcountries=False,
+        showcoastlines=False,
+        showland=True,
+        showframe=False,
+        scope='world',
+        landcolor='#FAFAFA'  # Set the land color to light gray
+        )
+
+    # Display the map
+    st.plotly_chart(fig,use_container_width = True)
+
+    #st.caption(f"Abbildung 3: {selected_indicator_Ankünfte_Logiernächte} nach Herkunftsland von {earliest_year} - {most_recent_year} (International)")
+
+
+
 
     # Herkunftsland Dataframe
-    st.subheader("Entwicklung Herkunftsländer")
-    selected_indicator_Ankünfte_Logiernächte_3 = st.selectbox('Auswahl Kennzahl', ["Logiernächte", "Ankünfte"], index=0,key='selected_indicator_Ankünfte_Logiernächte_3')
     grouped_df_Herkunftsland = df.groupby(['Date','Monat','Jahr','Herkunftsland']).agg({selected_indicator_Ankünfte_Logiernächte_3: 'sum'}).reset_index()
     grouped_df_Herkunftsland = grouped_df_Herkunftsland.groupby('Herkunftsland').agg({selected_indicator_Ankünfte_Logiernächte_3: list}).reset_index()
     grouped_df_Herkunftsland[f"{selected_indicator_Ankünfte_Logiernächte_3} Total"] = grouped_df_Herkunftsland[selected_indicator_Ankünfte_Logiernächte_3].apply(lambda x: sum(x))
@@ -898,7 +1199,7 @@ def create_markt_page(df):
     grouped_df_Herkunftsland.insert(0, "Flagge", grouped_df_Herkunftsland['Herkunftsland'].map(countryflags))
     grouped_df_Herkunftsland = grouped_df_Herkunftsland.sort_values(f"{selected_indicator_Ankünfte_Logiernächte_3} Total",ascending=False)
 
-
+    
     st.dataframe(
         grouped_df_Herkunftsland,
         column_config={
@@ -917,18 +1218,32 @@ def create_markt_page(df):
         hide_index=True,
         use_container_width = True
     )
+    st.caption(f"Abbildung 3: {selected_indicator_Ankünfte_Logiernächte} nach Herkunftsland von {earliest_year} - {most_recent_year}")
+
+    st.divider()
+    st.caption("with :heart: by Datachalet")
 
 
 def create_about_page():
     #st.title(":flag-ch: Hotellerie Explorer")
     st.title(f"About")
-
     # Create two columns for metrics and line chart
     st.divider()
-    st.header("Logiernächte & Ankünfte",
-              help="Logiernächte: Die Gesamtanzahl der Übernachtungen.\n\nAnkünfte: Die Gesamtanzahl der Gäste, die angekommen sind.",
-              )
+    st.subheader("Kontakt")
+    column1, column2 = st.columns(2)
+    column1.markdown('<a href="https://github.com/datachalet"><img src="https://i.imgur.com/EbsWGAk.png" alt="Title" width="80px"></a>', unsafe_allow_html=True)
     st.divider()
+    st.subheader("Datenquellen")
+    st.write('Hotellerie: Ankünfte und Logiernächte der geöffneten Betriebe in 100 Gemeinden nach Jahr, Monat, Gemeinde und Gästeherkunftsland (BFS):')
+    st.write('https://www.bfs.admin.ch/asset/de/26465895')
+    st.write('Hotellerie: Ankünfte und Logiernächte der geöffneten Betriebe nach Jahr, Monat, Kanton und Gästeherkunftsland (BFS):')
+    st.write('https://www.bfs.admin.ch/asset/de/26465893')
+    st.write('Hotellerie: Angebot und Nachfrage der geöffneten Betriebe in 100 Gemeinden nach Jahr, Monat und Gemeinde:')
+    st.write('https://www.bfs.admin.ch/asset/de/26465894')
+    st.divider()
+    st.caption("with :heart: by Datachalet")
+
+
 
 
 
@@ -960,12 +1275,19 @@ end_year = end_date.year
 # Sidebar navigation #
 ######################
 
-st.sidebar.title("🇨🇭 Hotellerie Explorer")
-page = st.sidebar.selectbox("", ("Gesamtmarkt Schweiz","Nach Gemeinde", "Nach Gemeinde und Herkunftsland","About"))
+
+st.sidebar.title("Hotellerie Explorer")
+page = st.sidebar.selectbox("Seitenauswahl:", (
+    "Gesamtmarkt Schweiz",
+    "Nach Gemeinde", 
+    "Nach Gemeinde und Herkunftsland",
+    #About
+    ))
 st.sidebar.divider() 
 
 #### Auswahl Gemeinde Global
-selected_Gemeinde = st.sidebar.selectbox('Auswahl Gemeinde', df_supply['Gemeinde'].unique(), index=0)
+if page == "Nach Gemeinde" or page == "Nach Gemeinde und Herkunftsland":
+    selected_Gemeinde = st.sidebar.selectbox('Auswahl Gemeinde', df_supply['Gemeinde'].unique(), index=0)
 
 
 ##### Auswahl Zeithorizont und filterung DFs
@@ -1033,6 +1355,8 @@ with expander:
         color1, color2, color3, color4, color5, color6, color7, color8, color9, color10,
         color11, color12, color13, color14, color15, color16, color17, color18, color19, color20
     ]
+st.sidebar.divider() 
+st.sidebar.caption("with :heart: by Datachalet")
 
 
 #### Page Selection
