@@ -945,7 +945,7 @@ def create_markt_page(df):
     col1.image(resized_image,use_column_width="auto")
 
 
-    st.title(f"Kennzahlen Gesamtmarkt")
+    st.title(f"Kennzahlen Schweiz")
     df = df.sort_values('Date')
 
     # Metrics Avererges whole time
