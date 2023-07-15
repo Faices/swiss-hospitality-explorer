@@ -431,7 +431,7 @@ def create_main_page(df,selected_Gemeinde):
     
     col1, col2, col3 = st.columns(3)
     #st.title(":flag-ch: Hotellerie Explorer")
-    col1.image(wappen_url,width=60)
+    col1.image(wappen_url,width=40)
 
     st.title(f"Kennzahlen für die Gemeinde {selected_Gemeinde}")
     st.divider()
@@ -744,7 +744,7 @@ def create_other_page(df,selected_Gemeinde):
     
     col1, col2, col3 = st.columns(3)
     #st.title(":flag-ch: Hotellerie Explorer")
-    col1.image(wappen_url,width=60)
+    col1.image(wappen_url,width=40)
     
     # Add a radio button to switch between Logiernächte and Ankünfte
     st.title(f"Kennzahlen für die Gemeinde {selected_Gemeinde} nach Herkunftsland")
@@ -946,7 +946,7 @@ def create_other_page(df,selected_Gemeinde):
 def create_markt_page(df):
     
     url = 'https://i.imgur.com/QWX5ZLR.png'  # URL of the image you want to resiz
-    desired_width = 60  # Desired width in pixels
+    desired_width = 40  # Desired width in pixels
     
     response = requests.get(url)
     image = Image.open(BytesIO(response.content))
