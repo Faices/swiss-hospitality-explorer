@@ -14,7 +14,8 @@ from io import BytesIO
 st.set_page_config(page_title='Hotellerie Explorer (Beta)',page_icon= "🇨🇭",initial_sidebar_state="auto")
 primaryColor="#80bbad" #for the map
 
-
+# Plot styling
+line_shape = 'spline'
 
 ##########
 ## Data ##
@@ -586,6 +587,7 @@ def create_main_page(df,selected_Gemeinde):
                     x='Date',
                     y=[selected_indicator_1, selected_indicator_2],  # Pass both indicators as a list
                     title="",
+                    line_shape=line_shape,
                     color_discrete_sequence=custom_color_sequence)  # Add colors for each indicator
 
     fig_line.update_layout(
@@ -594,7 +596,9 @@ def create_main_page(df,selected_Gemeinde):
         legend_title_text=''  # Hide the title of the x-axis
 
     )
-    st.plotly_chart(fig_line, use_container_width=True, auto_open=False)
+    st.plotly_chart(fig_line,
+                    use_container_width=True,
+                    auto_open=False)
     st.caption(f"Abbildung 1: {selected_indicator_1} und {selected_indicator_2} pro Monat in der Gemeinde {selected_Gemeinde} von {earliest_year} - {most_recent_year}")
 
 
@@ -609,6 +613,7 @@ def create_main_page(df,selected_Gemeinde):
                     color='Jahr',
                     y=selected_indicator_Ankünfte_Logiernächte,
                     title=f"",
+                    line_shape=line_shape,
                     color_discrete_sequence=custom_color_sequence)
     
     # calculate indikator mean
@@ -619,7 +624,9 @@ def create_main_page(df,selected_Gemeinde):
         #legend_traceorder="reversed",  # Sort the legend in descending order
         legend_title_text=''  # Hide the title of the x-axis
     )
-    st.plotly_chart(fig_line, use_container_width=True, auto_open=True)
+    st.plotly_chart(fig_line,
+                    use_container_width=True,
+                    auto_open=True)
     st.caption(f"Abbildung 2: {selected_indicator_Ankünfte_Logiernächte} pro Monat in der Gemeinde {selected_Gemeinde} im Jahresvergleich")
 
 
@@ -688,6 +695,7 @@ def create_main_page(df,selected_Gemeinde):
                     x='Date',
                     y=selected_indicator,
                     title="",
+                    line_shape=line_shape,
                     color_discrete_sequence=custom_color_sequence)  # Add colors for each indicator
 
     fig_line.update_layout(
@@ -707,6 +715,7 @@ def create_main_page(df,selected_Gemeinde):
                     color='Jahr',
                     y=selected_indicator,
                     title=f"",
+                    line_shape=line_shape,
                     color_discrete_sequence=custom_color_sequence)
     # calculate indikator mean
     avg = filtered_df_2[selected_indicator].mean()
@@ -807,6 +816,7 @@ def create_other_page(df,selected_Gemeinde):
         x='Date',
         y=y_column,
         color='Herkunftsland_grouped',
+        line_shape=line_shape,
         color_discrete_sequence=custom_color_sequence
     )
     fig_area.update_xaxes(categoryorder='array',
@@ -864,6 +874,7 @@ def create_other_page(df,selected_Gemeinde):
         grouped_df_date_grob ,
         x='Date',
         y=y_column,
+        line_shape=line_shape,
         color='Herkunftsland_grob',
         color_discrete_sequence=[color1,color2]
     )
@@ -1070,6 +1081,7 @@ def create_markt_page(df):
                     x='Date',
                     y=[selected_indicator_1, selected_indicator_2],  # Pass both indicators as a list
                     title="",
+                    line_shape=line_shape,
                     color_discrete_sequence=custom_color_sequence)  # Add colors for each indicator
 
     fig_line.update_layout(
@@ -1097,6 +1109,7 @@ def create_markt_page(df):
                     color='Jahr',
                     y=selected_indicator_Ankünfte_Logiernächte,
                     title=f"",
+                    line_shape=line_shape,
                     color_discrete_sequence=custom_color_sequence)
     
     # calculate indikator mean
