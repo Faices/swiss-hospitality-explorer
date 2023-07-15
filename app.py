@@ -1183,7 +1183,6 @@ def create_markt_page(df):
         colorscale='mint',
         text=country_totals['Herkunftsland'], # hover text
         marker_line_color='white'# line markers between states
-
     ))
 
     # Update the map layout
@@ -1195,7 +1194,6 @@ def create_markt_page(df):
         scope='world',
         landcolor='#FAFAFA'  # Set the land color to light gray
         )
-
     # Display the map
     st.plotly_chart(fig,use_container_width = True)
 
