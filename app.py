@@ -1202,7 +1202,7 @@ def create_markt_page(df):
 
 
 
-    # Herkunftsland Dataframe
+    # Herkunftsland Dataframee
     grouped_df_Herkunftsland = df.groupby(['Date','Monat','Jahr','Herkunftsland']).agg({selected_indicator_Ankünfte_Logiernächte_3: 'sum'}).reset_index()
     grouped_df_Herkunftsland = grouped_df_Herkunftsland.groupby('Herkunftsland').agg({selected_indicator_Ankünfte_Logiernächte_3: list}).reset_index()
     grouped_df_Herkunftsland[f"{selected_indicator_Ankünfte_Logiernächte_3} Total"] = grouped_df_Herkunftsland[selected_indicator_Ankünfte_Logiernächte_3].apply(lambda x: sum(x))
