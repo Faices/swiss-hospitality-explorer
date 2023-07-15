@@ -1237,24 +1237,24 @@ def create_markt_page(df):
     st.caption("with :heart: by Datachalet")
 
 
-def create_about_page():
-    #st.title(":flag-ch: Hotellerie Explorer")
-    st.title(f"About")
-    # Create two columns for metrics and line chart
-    st.divider()
-    st.subheader("Kontakt")
-    column1, column2 = st.columns(2)
-    column1.markdown('<a href="https://github.com/datachalet"><img src="https://i.imgur.com/EbsWGAk.png" alt="Title" width="80px"></a>', unsafe_allow_html=True)
-    st.divider()
-    st.subheader("Datenquellen")
-    st.write('Hotellerie: Ankünfte und Logiernächte der geöffneten Betriebe in 100 Gemeinden nach Jahr, Monat, Gemeinde und Gästeherkunftsland (BFS):')
-    st.write('https://www.bfs.admin.ch/asset/de/26465895')
-    st.write('Hotellerie: Ankünfte und Logiernächte der geöffneten Betriebe nach Jahr, Monat, Kanton und Gästeherkunftsland (BFS):')
-    st.write('https://www.bfs.admin.ch/asset/de/26465893')
-    st.write('Hotellerie: Angebot und Nachfrage der geöffneten Betriebe in 100 Gemeinden nach Jahr, Monat und Gemeinde:')
-    st.write('https://www.bfs.admin.ch/asset/de/26465894')
-    st.divider()
-    st.caption("with :heart: by Datachalet")
+    def create_about_page():
+        #st.title(":flag-ch: Hotellerie Explorer")
+        st.title(f"About")
+        # Create two columns for metrics and line chart
+        st.divider()
+        st.subheader("Kontakt")
+        column1, column2 = st.columns(2)
+        column1.markdown('<a href="https://github.com/datachalet"><img src="https://i.imgur.com/EbsWGAk.png" alt="Title" width="80px"></a>', unsafe_allow_html=True)
+        st.divider()
+        st.subheader("Datenquellen")
+        st.write('Hotellerie: Ankünfte und Logiernächte der geöffneten Betriebe in 100 Gemeinden nach Jahr, Monat, Gemeinde und Gästeherkunftsland (BFS):')
+        st.write('https://www.bfs.admin.ch/asset/de/26465895')
+        st.write('Hotellerie: Ankünfte und Logiernächte der geöffneten Betriebe nach Jahr, Monat, Kanton und Gästeherkunftsland (BFS):')
+        st.write('https://www.bfs.admin.ch/asset/de/26465893')
+        st.write('Hotellerie: Angebot und Nachfrage der geöffneten Betriebe in 100 Gemeinden nach Jahr, Monat und Gemeinde:')
+        st.write('https://www.bfs.admin.ch/asset/de/26465894')
+        st.divider()
+        st.caption("with :heart: by Datachalet")
 
 
 
@@ -1294,7 +1294,7 @@ page = st.sidebar.selectbox("Seitenauswahl:", (
     "Gesamtmarkt Schweiz",
     "Nach Gemeinde", 
     "Nach Gemeinde und Herkunftsland",
-    #About
+    #"About"
     ))
 st.sidebar.divider() 
 
