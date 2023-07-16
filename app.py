@@ -10,6 +10,7 @@ from streamlit import config
 import requests
 from io import BytesIO
 
+
 # Set the page width
 st.set_page_config(page_title='Hotellerie Explorer (Beta)',page_icon= "🇨🇭",initial_sidebar_state="auto")
 primaryColor="#80bbad" #for the map
