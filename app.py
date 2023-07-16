@@ -171,7 +171,7 @@ countryflags = {
         'Bulgarien':'https://i.imgur.com/SE0Q6O4.png',
         'Chile':'https://i.imgur.com/RM0E81n.png',
         'China':'https://i.imgur.com/PPUDcRk.png',
-       'Deutschland':'https://i.imgur.com/PzDbjZj.png',
+       'Deutschland':'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/countryicons/germany.svg',
        'Dänemark':'https://i.imgur.com/pZxjdgN.png',
        'Estland':'https://i.imgur.com/LDg9hR7.png',
        'Finnland':'https://i.imgur.com/ZpExlat.png',
