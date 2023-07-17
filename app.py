@@ -82,7 +82,7 @@ gemeindewappen = {
     'Freienbach': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Freienbach.svg',
     'Fribourg': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Fribourg.svg',
     'Gambarogno': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Gambarogno.svg',
-    'Genčve': 'https://github.com/thenotsowhiterabbit/hotelstats/blob/master/images/gemeindeicons/Geneve.svg',
+    'Genčve': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Geneve.svg',
     'Glarus Nord': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/GlarusNord.svg',
     'Glarus Süd': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/GlarusSud.svg',
     'Grindelwald': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Grindelwald.svg',
@@ -1296,6 +1296,7 @@ def create_markt_page(df,df_gemeinde):
         hide_index=True,
         use_container_width = True
     )
+
     st.caption(f"Abbildung 4: {selected_indicator_Ankünfte_Logiernächte} nach Gemeinde von {earliest_year} - {most_recent_year}")
 
 
