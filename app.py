@@ -82,7 +82,7 @@ gemeindewappen = {
     'Freienbach': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Freienbach.svg',
     'Fribourg': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Fribourg.svg',
     'Gambarogno': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Gambarogno.svg',
-    'Genève': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Geneve.svg',
+    'Genève': 'https://github.com/thenotsowhiterabbit/hotelstats/blob/master/images/gemeindeicons/Gen%C3%A8ve.svg',
     'Glarus Nord': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/GlarusNord.svg',
     'Glarus Süd': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/GlarusSud.svg',
     'Grindelwald': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Grindelwald.svg',
@@ -1060,7 +1060,7 @@ def create_other_page(df,selected_Gemeinde):
     st.caption("with :heart: by Datachalet")
 
 
-def create_markt_page(df):
+def create_markt_page(df,df_gemeinde):
     
     swissflag_url = "https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/countryicons/switzerland.svg"
 
@@ -1071,6 +1071,7 @@ def create_markt_page(df):
     )
 
     df = df.sort_values('Date')
+    df_gemeinde = df_gemeinde.sort_values('Date')
 
     # Metrics Avererges whole time
     # Format the metrics with thousand separators and no decimal places
@@ -1239,7 +1240,7 @@ def create_markt_page(df):
 
 
     # Kantons Dataframe
-    st.subheader("Entwicklung nach Kanton")
+    st.subheader("Entwicklung Kantone")
     selected_indicator_Ankünfte_Logiernächte_2 = st.selectbox('Auswahl Kennzahl', ["Logiernächte", "Ankünfte"], index=0,key='selected_indicator_Ankünfte_Logiernächte_2')
     grouped_df_kanton = df.groupby(['Date','Monat','Jahr','Kanton']).agg({selected_indicator_Ankünfte_Logiernächte_2: 'sum'}).reset_index()
     grouped_df_kanton = grouped_df_kanton.groupby('Kanton').agg({selected_indicator_Ankünfte_Logiernächte_2: list}).reset_index()
@@ -1267,6 +1268,40 @@ def create_markt_page(df):
         use_container_width = True
     )
     st.caption(f"Abbildung 3: {selected_indicator_Ankünfte_Logiernächte} nach Kanton von {earliest_year} - {most_recent_year}")
+
+    #Gemeinde Dataframe
+    st.subheader("Entwicklung Gemeinden")
+    grouped_df_gemeinde = df_gemeinde.groupby(['Date','Monat','Jahr','Gemeinde']).agg({selected_indicator_Ankünfte_Logiernächte_2: 'sum'}).reset_index()
+    grouped_df_gemeinde = grouped_df_gemeinde.groupby('Gemeinde').agg({selected_indicator_Ankünfte_Logiernächte_2: list}).reset_index()
+    grouped_df_gemeinde[f"{selected_indicator_Ankünfte_Logiernächte_2} Total"] = grouped_df_gemeinde[selected_indicator_Ankünfte_Logiernächte_2].apply(lambda x: sum(x))
+    grouped_df_kanton[f"{selected_indicator_Ankünfte_Logiernächte_2} Anteil"] = ((100 / sum(grouped_df_gemeinde[f"{selected_indicator_Ankünfte_Logiernächte_2} Total"])) * grouped_df_gemeinde[f"{selected_indicator_Ankünfte_Logiernächte_2} Total"]).apply(lambda x: f"{x:.2f}%")
+    grouped_df_gemeinde.insert(0, "Wappen", grouped_df_gemeinde['Gemeinde'].map(gemeindewappen))
+    grouped_df_gemeinde = grouped_df_gemeinde.sort_values(f"{selected_indicator_Ankünfte_Logiernächte_2} Total",ascending=False)
+
+
+    st.dataframe(
+        grouped_df_gemeinde,
+        column_config={
+            "Wappen": st.column_config.ImageColumn("Wappen"),
+            "Gemeinde": "Gemeinde",
+            selected_indicator_Ankünfte_Logiernächte_2: st.column_config.LineChartColumn(
+                selected_indicator_Ankünfte_Logiernächte_2),
+            f"{selected_indicator_Ankünfte_Logiernächte_2} Anteil":st.column_config.ProgressColumn(
+        f"{selected_indicator_Ankünfte_Logiernächte_2} Anteil",
+            help="% zum Gesamtmarkt",
+            min_value=0,
+            max_value=1,
+        ),
+                },
+        hide_index=True,
+        use_container_width = True
+    )
+    st.caption(f"Abbildung 4: {selected_indicator_Ankünfte_Logiernächte} nach Gemeinde von {earliest_year} - {most_recent_year}")
+
+
+
+
+
 
     ##### Herkunftsland Map ####
     st.subheader("Entwicklung nach Herkunftsland")
@@ -1310,7 +1345,7 @@ def create_markt_page(df):
     # Display the map
     st.plotly_chart(fig,use_container_width = True)
 
-    #st.caption(f"Abbildung 3: {selected_indicator_Ankünfte_Logiernächte} nach Herkunftsland von {earliest_year} - {most_recent_year} (International)")
+    #st.caption(f"Abbildung 5: {selected_indicator_Ankünfte_Logiernächte} nach Herkunftsland von {earliest_year} - {most_recent_year} (International)")
 
 
 
@@ -1342,7 +1377,7 @@ def create_markt_page(df):
         hide_index=True,
         use_container_width = True
     )
-    st.caption(f"Abbildung 3: {selected_indicator_Ankünfte_Logiernächte} nach Herkunftsland von {earliest_year} - {most_recent_year}")
+    st.caption(f"Abbildung 5: {selected_indicator_Ankünfte_Logiernächte} nach Herkunftsland von {earliest_year} - {most_recent_year}")
 
     st.divider()
     st.caption("with :heart: by Datachalet")
@@ -1490,6 +1525,6 @@ if page == "Nach Gemeinde":
 elif page == "Nach Gemeinde und Herkunftsland":
     create_other_page(df_country,selected_Gemeinde)
 elif page == "Gesamtmarkt Schweiz":
-    create_markt_page(df_kanton)
+    create_markt_page(df_kanton,df_supply)
 elif page == "About":
     create_about_page()
