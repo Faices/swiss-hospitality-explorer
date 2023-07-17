@@ -9,6 +9,9 @@ import calendar
 from streamlit import config
 import requests
 from io import BytesIO
+import datetime
+import calendar
+import pandas as pd
 
 
 # Set the page width
@@ -417,107 +420,98 @@ country_mapping = {
     'Übriges Zentralamerika, Karibik': 'ZAK'
 }
 
+# Constants
+COUNTRY_URL = "https://www.pxweb.bfs.admin.ch/DownloadFile.aspx?file=px-x-1003020000_101"
+SUPPLY_URL = "https://www.pxweb.bfs.admin.ch/DownloadFile.aspx?file=px-x-1003020000_201"
+KANTON_URL = "https://www.pxweb.bfs.admin.ch/DownloadFile.aspx?file=px-x-1003020000_102"
+MONTH_MAPPING = {
+    'Januar': 1, 'Februar': 2, 'März': 3, 'April': 4, 'Mai': 5, 'Juni': 6,
+    'Juli': 7, 'August': 8, 'September': 9, 'Oktober': 10, 'November': 11, 'Dezember': 12
+}
 
-# Store data as a pandas dataframe
-@st.cache_data
-def load_data():
-    # Calculate the cutoff date (last day of the month before the previous month
-    current_date = datetime.date.today()
 
+# Helper functions 
+def calculate_cutoff_date(current_date: datetime.date, cutoff_months: int) -> datetime.date:
     if current_date.day < 8:
-        cutoff_date = datetime.date(current_date.year, current_date.month - 3, calendar.monthrange(current_date.year, current_date.month - 3)[1])
+        cutoff_date = datetime.date(current_date.year, current_date.month - cutoff_months, calendar.monthrange(current_date.year, current_date.month - cutoff_months)[1])
     else:
-        cutoff_date = datetime.date(current_date.year, current_date.month - 2, calendar.monthrange(current_date.year, current_date.month - 2)[1])
+        cutoff_date = datetime.date(current_date.year, current_date.month - cutoff_months + 1, calendar.monthrange(current_date.year, current_date.month - cutoff_months + 1)[1])
+    return cutoff_date
 
-    ## Herkunftsland ##
-    url = "https://www.pxweb.bfs.admin.ch/DownloadFile.aspx?file=px-x-1003020000_101"
+def download_data(url: str) -> pd.DataFrame:
     px_data = pyaxis.parse(uri=url, encoding='ISO-8859-2')
-    df_country = px_data['DATA']
+    return px_data['DATA']
 
-    # Filter rows
+def filter_data(df: pd.DataFrame) -> pd.DataFrame:
+    df = df[(df["Monat"] != "Jahrestotal")]
+    return df
+
+def pivot_data(df: pd.DataFrame, index_columns: list[str], columns: str, values: str) -> pd.DataFrame:
+    df = df.pivot(index=index_columns, columns=columns, values=values).reset_index()
+    return df
+
+def convert_to_datetime(df: pd.DataFrame) -> pd.DataFrame:
+    df['Date'] = pd.to_datetime(df['Jahr'].astype(str) + '-' + df['Monat'].map(MONTH_MAPPING).astype(str))
+    df['Date'] = df['Date'].dt.date
+    df = df[['Date'] + df.columns[:-1].tolist()]
+    df = df.sort_values('Date').reset_index(drop=True)
+    return df
+
+def convert_columns(df: pd.DataFrame, numeric_columns: list[str]) -> pd.DataFrame:
+    for column in numeric_columns:
+        df[column] = pd.to_numeric(df[column], errors='coerce')
+    return df
+
+def calculate_additional_columns(df: pd.DataFrame, numerator: str, denominator: str, result_column: str) -> pd.DataFrame:
+    df[result_column] = df[numerator] / df[denominator]
+    return df
+
+def map_herkunftsland(df: pd.DataFrame, herkunftsland_column: str, result_column: str) -> pd.DataFrame:
+    df[result_column] = df[herkunftsland_column].apply(lambda x: "Domestic" if x == "Schweiz" else "International")
+    return df
+
+@st.cache_data
+def load_data(current_date: datetime.date, cutoff_months: int) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    cutoff_date = calculate_cutoff_date(current_date, cutoff_months)
+
+    df_country = download_data(COUNTRY_URL)
+    df_country = filter_data(df_country)
+    df_country = pivot_data(df_country, ["Jahr", "Monat", "Gemeinde", "Herkunftsland"], "Indikator", "DATA")
+    df_country = convert_to_datetime(df_country)
+    df_country = convert_columns(df_country, ["Logiernächte", "Ankünfte"])
+    df_country = calculate_additional_columns(df_country, "Logiernächte", "Ankünfte", "Aufenthaltsdauer")
+    df_country = map_herkunftsland(df_country, "Herkunftsland", "Herkunftsland_grob")
     df_country = df_country[(df_country["Monat"] != "Jahrestotal") & (df_country["Herkunftsland"] != "Herkunftsland - Total")]
 
-    # Pivot the dataframe
-    df_country = df_country.pivot(index=["Jahr", "Monat", "Gemeinde", "Herkunftsland"], columns="Indikator", values="DATA").reset_index()
+    df_supply = download_data(SUPPLY_URL)
+    df_supply = filter_data(df_supply)
+    df_supply = pivot_data(df_supply, ["Jahr", "Monat", "Gemeinde"], "Indikator", "DATA")
+    df_supply = convert_to_datetime(df_supply)
+    df_supply = convert_columns(df_supply, ["Ankünfte", "Betriebe", "Betten", "Bettenauslastung in %", "Logiernächte", "Zimmer", "Zimmerauslastung in %", "Zimmernächte"])
 
-    ## Angebot und Nachfrage ##
-    url = "https://www.pxweb.bfs.admin.ch/DownloadFile.aspx?file=px-x-1003020000_201"
-    px_data = pyaxis.parse(uri=url, encoding='ISO-8859-2')
-    df_supply = px_data['DATA']
-
-    # Filter rows
-    df_supply = df_supply[df_supply["Monat"] != "Jahrestotal"]
-
-    # Pivot the dataframe
-    df_supply = df_supply.pivot(index=["Jahr", "Monat", "Gemeinde"], columns="Indikator", values="DATA").reset_index()
-
-
-    ## Kanton ##
-    url = "https://www.pxweb.bfs.admin.ch/DownloadFile.aspx?file=px-x-1003020000_102"
-    px_data = pyaxis.parse(uri=url, encoding='ISO-8859-2')
-    df_kanton = px_data['DATA']
-
-    # Filter
-    df_kanton = df_kanton[(df_kanton["Monat"] != "Jahrestotal") & (df_kanton["Herkunftsland"] != "Herkunftsland - Total")]
+    df_kanton = download_data(KANTON_URL)
+    df_kanton = filter_data(df_kanton)
     df_kanton = df_kanton[(df_kanton["Kanton"] != "Schweiz")]
     df_kanton = df_kanton[~df_kanton["Herkunftsland"].isin(['Baltische Staaten', 'Australien, Neuseeland, Ozeanien', 'Golf-Staaten', 'Serbien und Montenegro', 'Zentralamerika, Karibik'])]
-
-
-    # Pivot the dataframe
-    df_kanton = df_kanton.pivot(index=["Jahr", "Monat", "Kanton", "Herkunftsland"], columns="Indikator", values="DATA").reset_index()
-
-
-
-
-    # Dictionary mapping German month names to numeric month numbers
-    month_mapping = {
-        'Januar': 1, 'Februar': 2, 'März': 3, 'April': 4, 'Mai': 5, 'Juni': 6,
-        'Juli': 7, 'August': 8, 'September': 9, 'Oktober': 10, 'November': 11, 'Dezember': 12
-    }
-
-    # Function to convert 'Jahr' and 'Monat' columns to a datetime object
-    def convert_to_datetime(df):
-        df['Date'] = pd.to_datetime(df['Jahr'].astype(str) + '-' + df['Monat'].map(month_mapping).astype(str))
-        df['Date'] = df['Date'].dt.date  # Extract only the date part
-        df = df[['Date'] + df.columns[:-1].tolist()]  # Set 'Date' column as the first column
-        df = df.sort_values('Date').reset_index(drop=True)
-        return df
-
-    # Convert columns to the correct formats and calculate new columns
-    df_country = convert_to_datetime(df_country)
-    df_country["Logiernächte"] = pd.to_numeric(df_country["Logiernächte"], errors='coerce')
-    df_country["Ankünfte"] = pd.to_numeric(df_country["Ankünfte"], errors='coerce')
-    df_country["Aufenthaltsdauer"] = df_country["Logiernächte"] / df_country["Ankünfte"]
-    df_country["Herkunftsland_grob"] = df_country["Herkunftsland"].apply(lambda x: "Domestic" if x == "Schweiz" else "International")
-
-    df_supply = convert_to_datetime(df_supply)
-    df_supply["Ankünfte"] = pd.to_numeric(df_supply["Ankünfte"], errors='coerce')
-    df_supply["Betriebe"] = pd.to_numeric(df_supply["Betriebe"], errors='coerce')
-    df_supply["Betten"] = pd.to_numeric(df_supply["Betten"], errors='coerce')
-    df_supply["Bettenauslastung in %"] = pd.to_numeric(df_supply["Bettenauslastung in %"], errors='coerce')
-    df_supply["Logiernächte"] = pd.to_numeric(df_supply["Logiernächte"], errors='coerce')
-    df_supply["Zimmer"] = pd.to_numeric(df_supply["Zimmer"], errors='coerce')
-    df_supply["Zimmerauslastung in %"] = pd.to_numeric(df_supply["Zimmerauslastung in %"], errors='coerce')
-    df_supply["Zimmernächte"] = pd.to_numeric(df_supply["Zimmernächte"], errors='coerce')
-
+    df_kanton = pivot_data(df_kanton, ["Jahr", "Monat", "Kanton", "Herkunftsland"], "Indikator", "DATA")
     df_kanton = convert_to_datetime(df_kanton)
-    df_kanton["Logiernächte"] = pd.to_numeric(df_kanton["Logiernächte"], errors='coerce')
-    df_kanton["Ankünfte"] = pd.to_numeric(df_kanton["Ankünfte"], errors='coerce')
-    df_kanton["Aufenthaltsdauer"] = df_kanton["Logiernächte"] / df_kanton["Ankünfte"]
-    df_kanton["Herkunftsland_grob"] = df_kanton["Herkunftsland"].apply(lambda x: "Domestic" if x == "Schweiz" else "International")
+    df_kanton = convert_columns(df_kanton, ["Logiernächte", "Ankünfte"])
+    df_kanton = calculate_additional_columns(df_kanton, "Logiernächte", "Ankünfte", "Aufenthaltsdauer")
+    df_kanton = map_herkunftsland(df_kanton, "Herkunftsland", "Herkunftsland_grob")
+    df_kanton = df_kanton[(df_kanton["Monat"] != "Jahrestotal") & (df_kanton["Herkunftsland"] != "Herkunftsland - Total")]
 
-    # Filter based on current date
     df_supply = df_supply[df_supply['Date'] <= cutoff_date]
-    df_country = df_country[df_country['Date'] <= cutoff_date ]
-    df_kanton = df_kanton[df_kanton['Date'] <= cutoff_date ]
+    df_country = df_country[df_country['Date'] <= cutoff_date]
+    df_kanton = df_kanton[df_kanton['Date'] <= cutoff_date]
 
     df_country['Jahr'] = df_country['Jahr'].astype(int)
-    df_supply['Jahr'] = df_supply ['Jahr'].astype(int)
-    df_kanton['Jahr'] = df_kanton ['Jahr'].astype(int)
+    df_supply['Jahr'] = df_supply['Jahr'].astype(int)
+    df_kanton['Jahr'] = df_kanton['Jahr'].astype(int)
 
     return df_country, df_supply, df_kanton
 
-df_country,df_supply, df_kanton = load_data()
+df_country, df_supply, df_kanton = load_data(datetime.date.today(), 3)
+
 
 
 def create_main_page(df,selected_Gemeinde):
