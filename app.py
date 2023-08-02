@@ -15,7 +15,7 @@ import pandas as pd
 import plotly.graph_objs as go
 
 
-# Set the page width
+# Set the page width m
 st.set_page_config(page_title='Hotellerie Explorer (Beta)',page_icon= "🇨🇭",initial_sidebar_state="auto")
 primaryColor="#80bbad" #for the map
 
