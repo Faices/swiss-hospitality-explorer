@@ -12,6 +12,7 @@ from io import BytesIO
 import datetime
 import calendar
 import pandas as pd
+import plotly.graph_objs as go
 
 
 # Set the page width
@@ -470,6 +471,8 @@ def map_herkunftsland(df: pd.DataFrame, herkunftsland_column: str, result_column
     df[result_column] = df[herkunftsland_column].apply(lambda x: "Domestic" if x == "Schweiz" else "International")
     return df
 
+
+# Load data
 @st.cache_data
 def load_data(current_date: datetime.date, cutoff_months: int) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     cutoff_date = calculate_cutoff_date(current_date, cutoff_months)
@@ -508,9 +511,12 @@ def load_data(current_date: datetime.date, cutoff_months: int) -> tuple[pd.DataF
     df_supply['Jahr'] = df_supply['Jahr'].astype(int)
     df_kanton['Jahr'] = df_kanton['Jahr'].astype(int)
 
-    return df_country, df_supply, df_kanton
+    df_hotels = pd.read_feather(f"data/20230721_Hotels.feather")
 
-df_country, df_supply, df_kanton = load_data(datetime.date.today(), 3)
+
+    return df_country, df_supply, df_kanton ,df_hotels
+
+df_country, df_supply, df_kanton, df_hotels = load_data(datetime.date.today(), 3) #3 for the current upload logic at bfs
 
 
 
@@ -1378,6 +1384,76 @@ def create_markt_page(df,df_gemeinde):
     st.caption("with :heart: by Datachalet")
 
 
+
+
+def create_hotels_page(df,selected_Gemeinde):
+    #st.title(":flag-ch: Hotellerie Explorer")
+    st.title(f"About")
+    # Create two columns for metrics and line chart
+    # Filter dataframe based on selected Gemeinde
+    df = df[df['Ort'] == selected_Gemeinde]
+    st.divider()
+    st.dataframe(df)
+    st.divider()
+    fig = px.bar(
+        df,
+        x='Hotel',
+        y='Anzahl_Zimmer_Apartments',
+        color='Stars',
+        color_discrete_sequence=custom_color_sequence
+    )
+    # Sort the bars based on the 'Anzahl_Zimmer_Apartments' column in descending order
+    fig.update_xaxes(categoryorder='total descending')
+    # Sort the legend alphabetically (assuming 'Stars' column contains categorical values)
+    fig.update_layout(
+        legend=dict(
+            traceorder='reversed',
+        )
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+
+    # Drop rows where either latitude or longitude is missing
+    df_map = df.dropna(subset=['lat', 'lon'])
+    st.dataframe(df)
+
+    st.map(
+        df_map,
+        latitude='lat',
+        longitude='lon',
+        color='Stars',
+        #size='Anzahl_Zimmer_Apartments'
+        )
+
+
+    # df_map['Hover_Text'] = df_map['Hotel'] + df_map['Ort']
+
+
+
+    # fig = px.scatter_mapbox(df_map,
+    #                         lat="lat",
+    #                         lon="lon",
+    #                         color='Stars',  # Use the fixed color for all points
+    #                         color_continuous_scale=px.colors.cyclical.IceFire,
+    #                         size_max=15,
+    #                         text=df_map['Hover_Text'],
+    #                         hover_data={'Hover_Text':True,  
+    #                                 "lat":False, 
+    #                                 "lon":False,
+    #                                 },
+    #                         zoom=6
+    # )
+    
+    # fig.update_layout(clickmode='event+select',
+    #                   mapbox_style="open-street-map",
+    #                   mapbox_center={"lat": df_map['lat'].mean(), "lon": df_map['lon'].mean()}
+    #                   )
+
+    # # Display the map
+    # st.plotly_chart(fig, use_container_width=True)
+    st.caption("with :heart: by Datachalet")
+
+
 def create_about_page():
     #st.title(":flag-ch: Hotellerie Explorer")
     st.title(f"About")
@@ -1435,12 +1511,13 @@ page = st.sidebar.selectbox("Seitenauswahl:", (
     "Gesamtmarkt Schweiz",
     "Nach Gemeinde", 
     "Nach Gemeinde und Herkunftsland",
+    #"Hotels",
     "About"
     ))
 st.sidebar.divider() 
 
 #### Auswahl Gemeinde Global
-if page == "Nach Gemeinde" or page == "Nach Gemeinde und Herkunftsland":
+if page == "Nach Gemeinde" or page == "Nach Gemeinde und Herkunftsland" or page == "Hotels":
     selected_Gemeinde = st.sidebar.selectbox('Auswahl Gemeinde', df_supply['Gemeinde'].unique(), index=0)
 
 
@@ -1521,5 +1598,7 @@ elif page == "Nach Gemeinde und Herkunftsland":
     create_other_page(df_country,selected_Gemeinde)
 elif page == "Gesamtmarkt Schweiz":
     create_markt_page(df_kanton,df_supply)
+elif page == "Hotels":
+    create_hotels_page(df_hotels,selected_Gemeinde)
 elif page == "About":
     create_about_page()
