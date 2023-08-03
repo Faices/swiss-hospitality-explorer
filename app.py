@@ -858,7 +858,7 @@ def create_other_page(df,selected_Gemeinde):
 
     # Display the title with image at the end
     st.markdown(
-        f'<h1 style="display: flex; align-items: center;">Kennzahlen nach Herkunftslandd für die Gemeinde {selected_Gemeinde}<img src="{gemeindewappen_url}" style="max-height: 40px; margin-left: 10px;"></h1>',
+        f'<h1 style="display: flex; align-items: center;">Kennzahlen nach Herkunftsland für die Gemeinde {selected_Gemeinde}<img src="{gemeindewappen_url}" style="max-height: 40px; margin-left: 10px;"></h1>',
         unsafe_allow_html=True
     )
 
