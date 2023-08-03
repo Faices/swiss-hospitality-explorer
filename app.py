@@ -1044,7 +1044,7 @@ def create_other_page(df,selected_Gemeinde):
         hide_index=True,
         use_container_width = True
     )
-    st.caption(f"Abbildung 4: {selected_indicator} für die Gemeinde {selected_Gemeinde} von {start_year} - {end_year} nach Herkunftsland")
+    st.caption(f"Abbildung 6: {selected_indicator} für die Gemeinde {selected_Gemeinde} von {start_year} - {end_year} nach Herkunftsland")
 
 
     # Download CSV
@@ -1248,7 +1248,6 @@ def create_markt_page(df,df_gemeinde):
     grouped_df_kanton.insert(0, "Wappen", grouped_df_kanton['Kanton'].map(kantonswappen))
     grouped_df_kanton = grouped_df_kanton.sort_values(f"{selected_indicator_Ankünfte_Logiernächte_2} Total",ascending=False)
 
-
     st.dataframe(
         grouped_df_kanton,
         column_config={
@@ -1323,12 +1322,13 @@ def create_markt_page(df,df_gemeinde):
 
 
 
-    import plotly.graph_objects as go
+    # Generate a custom continuous color scale by interpolating between the base color and white
+    color_scale = ['#FAFAFA',primaryColor]
 
     fig = go.Figure(data=go.Choropleth(
         locations=country_totals['ISO_Code'],
         z=country_totals[selected_indicator_Ankünfte_Logiernächte_3].astype(float),
-        colorscale='mint',
+        colorscale=color_scale ,
         text=country_totals['Herkunftsland'], # hover text
         marker_line_color='white'# line markers between states
     ))
@@ -1560,7 +1560,7 @@ st.sidebar.write("")
 expander = st.sidebar.expander("Custom Colors")
 with expander:
     col1, col2, col3, col4, col5 = st.columns(5)
-    color1 = col1.color_picker('1st', '#80bbad')
+    color1 = col1.color_picker('Main', '#80bbad')
     color2 = col2.color_picker('2nd', '#435254')
     color3 = col3.color_picker('3rd', '#17e88f')
     color4 = col4.color_picker('4th', '#dbd99a')
