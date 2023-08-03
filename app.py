@@ -16,7 +16,7 @@ import plotly.graph_objs as go
 
 
 # Set the page width m
-st.set_page_config(page_title='Hotellerie Explorer (Beta)',page_icon= "🇨🇭",initial_sidebar_state="auto")
+st.set_page_config(page_title='Swiss Hospitality Explorer (Beta)',page_icon= "🇨🇭",initial_sidebar_state="auto")
 primaryColor="#80bbad" #for the map
 
 # Plot styling
@@ -1506,7 +1506,7 @@ end_year = end_date.year
 ######################
 
 
-st.sidebar.title("Hotellerie Explorer")
+st.sidebar.title("Swiss Hospitality Explorer")
 page = st.sidebar.selectbox("Seitenauswahl:", (
     "Gesamtmarkt Schweiz",
     "Nach Gemeinde", 
