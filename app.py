@@ -510,12 +510,12 @@ def load_data(current_date: datetime.date, cutoff_months: int) -> tuple[pd.DataF
     df_supply['Jahr'] = df_supply['Jahr'].astype(int)
     df_kanton['Jahr'] = df_kanton['Jahr'].astype(int)
 
-    df_hotels = pd.read_feather(f"data/20230721_Hotels.feather")
+    #df_hotels = pd.read_feather(f"data/20230721_Hotels.feather")
 
 
-    return df_country, df_supply, df_kanton ,df_hotels
+    return df_country, df_supply, df_kanton #df_hotels
 
-df_country, df_supply, df_kanton, df_hotels = load_data(datetime.date.today(), 3) #3 for the current upload logic at bfs
+df_country, df_supply, df_kanton = load_data(datetime.date.today(), 3) #3 for the current upload logic at bfs
 
 
 
@@ -1560,16 +1560,16 @@ st.sidebar.write("")
 expander = st.sidebar.expander("Custom Colors")
 with expander:
     col1, col2, col3, col4, col5 = st.columns(5)
-    color1 = col1.color_picker('Main', '#80bbad')
-    color2 = col2.color_picker('2nd', '#435254')
-    color3 = col3.color_picker('3rd', '#17e88f')
-    color4 = col4.color_picker('4th', '#dbd99a')
-    color5 = col5.color_picker('5th', '#5ab689')
+    color1 = col1.color_picker('Main', '#037F8C')
+    color2 = col2.color_picker('2nd', '#7ED0D9')
+    color3 = col3.color_picker('3rd', '#01A5BD')
+    color4 = col4.color_picker('4th', '#F27244')
+    color5 = col5.color_picker('5th', '#F28F79')
     color6 = col1.color_picker('6th', '#368c7a')
-    color7 = col2.color_picker('7th', '#93b886')
-    color8 = col3.color_picker('8th', '#779778')
+    color7 = col2.color_picker('7th', '#7CB342')
+    color8 = col3.color_picker('8th', '#0C8040')
     color9 = col4.color_picker('9th', '#1ad3aa')
-    color10 = col5.color_picker('10th', '#c4c085')
+    color10 = col5.color_picker('10th', '#F2B710')
     color11 = col1.color_picker('11th', '#a6b481')
     color12 = col2.color_picker('12th', '#15634d')
     color13 = col3.color_picker('13th', '#00aa85')
@@ -1580,6 +1580,7 @@ with expander:
     color18 = col3.color_picker('18th', '#e2c48e')
     color19 = col4.color_picker('19th', '#9db784')
     color20 = col5.color_picker('20th', '#82a793')
+
 
     custom_color_sequence = [
         color1, color2, color3, color4, color5, color6, color7, color8, color9, color10,
