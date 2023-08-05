@@ -551,7 +551,7 @@ def load_data(current_date: datetime.date, cutoff_months: int) -> tuple[pd.DataF
     df_supply['Jahr'] = df_supply['Jahr'].astype(int)
     df_kanton['Jahr'] = df_kanton['Jahr'].astype(int)
 
-    df_hotels = pd.read_feather(f"data/20230721_Hotels.feather")
+    #df_hotels = pd.read_feather(f"data/20230721_Hotels.feather")
 
 
     return df_country, df_kanton, df_supply #df_hotels
