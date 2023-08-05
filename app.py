@@ -1484,6 +1484,7 @@ def create_about_page():
     st.subheader("Kontakt")
     column1, column2 = st.columns(2)
     column1.markdown('<a href="https://github.com/datachalet"><img src="https://i.imgur.com/EbsWGAk.png" alt="Title" width="80px"></a>', unsafe_allow_html=True)
+    column1.write('datachalet@gmail.com')
     st.divider()
     st.subheader("Datenquellen")
     st.write('Hotellerie: Ankünfte und Logiernächte der geöffneten Betriebe in 100 Gemeinden nach Jahr, Monat, Gemeinde und Gästeherkunftsland (BFS):')
