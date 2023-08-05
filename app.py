@@ -425,8 +425,8 @@ COUNTRY_URL = "https://www.pxweb.bfs.admin.ch/DownloadFile.aspx?file=px-x-100302
 SUPPLY_URL = "https://www.pxweb.bfs.admin.ch/DownloadFile.aspx?file=px-x-1003020000_201"
 KANTON_URL = "https://www.pxweb.bfs.admin.ch/DownloadFile.aspx?file=px-x-1003020000_102"
 MONTH_MAPPING = {
-    'Januar': 1, 'Februar': 2, 'März': 3, 'April': 4, 'Mai': 5, 'Juni': 6,
-    'Juli': 7, 'August': 8, 'September': 9, 'Oktober': 10, 'November': 11, 'Dezember': 12
+    'Januar': '1', 'Februar': '2', 'März': '3', 'April': '4', 'Mai': '5', 'Juni': '6',
+    'Juli': '7', 'August': '8', 'September': '9', 'Oktober': '10', 'November': '11', 'Dezember': '12'
 }
 
 
@@ -442,6 +442,11 @@ def download_data(url: str) -> pd.DataFrame:
     px_data = pyaxis.parse(uri=url, encoding='ISO-8859-2')
     return px_data['DATA']
 
+def download_data_utf8(url: str) -> pd.DataFrame:
+    px_data = pyaxis.parse(uri=url, encoding='utf-8')
+    return px_data['DATA']
+
+
 def filter_data(df: pd.DataFrame) -> pd.DataFrame:
     df = df[(df["Monat"] != "Jahrestotal")]
     return df
@@ -451,11 +456,37 @@ def pivot_data(df: pd.DataFrame, index_columns: list[str], columns: str, values:
     return df
 
 def convert_to_datetime(df: pd.DataFrame) -> pd.DataFrame:
-    df['Date'] = pd.to_datetime(df['Jahr'].astype(str) + '-' + df['Monat'].map(MONTH_MAPPING).astype(str))
+    
+    # Ensure 'Jahr' is in integer format and then convert to string
+    df['Year'] = df['Jahr'].astype(int).astype(str)
+    
+    # Map 'Monat' to its corresponding integer value
+    df['Month'] = df['Monat'].map(MONTH_MAPPING).astype(int).astype(str)
+    
+    # Create a combined 'Date' string
+    df['Date_str'] = df['Year'] + '-' + df['Month']
+    
+    # Check if there are any problematic date strings before conversion
+    problematic_dates = df[~df['Date_str'].str.match(r'^\d{4}-\d{1,2}$')]
+    if not problematic_dates.empty:
+        raise ValueError(f"Problematic date strings found: {problematic_dates['Date_str'].values}")
+    
+    # Convert 'Date_str' to datetime
+    df['Date'] = pd.to_datetime(df['Date_str'])
     df['Date'] = df['Date'].dt.date
-    df = df[['Date'] + df.columns[:-1].tolist()]
+    
+    # Rearrange columns and sort by date
+    df = df[['Date'] + df.columns[:-3].tolist()]
     df = df.sort_values('Date').reset_index(drop=True)
+    
     return df
+
+# def convert_to_datetime(df: pd.DataFrame) -> pd.DataFrame:
+#     df['Date'] = pd.to_datetime(df['Jahr'].astype(str) + '-' + df['Monat'].map(MONTH_MAPPING).astype(int).astype(str))
+#     df['Date'] = df['Date'].dt.date
+#     df = df[['Date'] + df.columns[:-1].tolist()]
+#     df = df.sort_values('Date').reset_index(drop=True)
+#     return df
 
 def convert_columns(df: pd.DataFrame, numeric_columns: list[str]) -> pd.DataFrame:
     for column in numeric_columns:
@@ -470,17 +501,25 @@ def map_herkunftsland(df: pd.DataFrame, herkunftsland_column: str, result_column
     df[result_column] = df[herkunftsland_column].apply(lambda x: "Domestic" if x == "Schweiz" else "International")
     return df
 
+# Check if a value is numeric
+def is_numeric(value):
+    try:
+        int(value)
+        return True
+    except ValueError:
+        return False
+
 
 # Load data
 @st.cache_data
 def load_data(current_date: datetime.date, cutoff_months: int) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     cutoff_date = calculate_cutoff_date(current_date, cutoff_months)
-
-    df_country = download_data(COUNTRY_URL)
+    df_country = download_data_utf8(COUNTRY_URL)
     df_country = filter_data(df_country)
     df_country = pivot_data(df_country, ["Jahr", "Monat", "Gemeinde", "Herkunftsland"], "Indikator", "DATA")
     df_country = convert_to_datetime(df_country)
     df_country = convert_columns(df_country, ["Logiernächte", "Ankünfte"])
+    df_country = df_country[df_country['Ankünfte'].apply(is_numeric) & df_country['Logiernächte'].apply(is_numeric)] #filter out not avaiable data
     df_country = calculate_additional_columns(df_country, "Logiernächte", "Ankünfte", "Aufenthaltsdauer")
     df_country = map_herkunftsland(df_country, "Herkunftsland", "Herkunftsland_grob")
     df_country = df_country[(df_country["Monat"] != "Jahrestotal") & (df_country["Herkunftsland"] != "Herkunftsland - Total")]
@@ -490,6 +529,7 @@ def load_data(current_date: datetime.date, cutoff_months: int) -> tuple[pd.DataF
     df_supply = pivot_data(df_supply, ["Jahr", "Monat", "Gemeinde"], "Indikator", "DATA")
     df_supply = convert_to_datetime(df_supply)
     df_supply = convert_columns(df_supply, ["Ankünfte", "Betriebe", "Betten", "Bettenauslastung in %", "Logiernächte", "Zimmer", "Zimmerauslastung in %", "Zimmernächte"])
+    df_supply = df_supply[df_supply['Ankünfte'].apply(is_numeric) & df_supply['Logiernächte'].apply(is_numeric)] #filter out not avaiable data
 
     df_kanton = download_data(KANTON_URL)
     df_kanton = filter_data(df_kanton)
@@ -499,23 +539,24 @@ def load_data(current_date: datetime.date, cutoff_months: int) -> tuple[pd.DataF
     df_kanton = convert_to_datetime(df_kanton)
     df_kanton = convert_columns(df_kanton, ["Logiernächte", "Ankünfte"])
     df_kanton = calculate_additional_columns(df_kanton, "Logiernächte", "Ankünfte", "Aufenthaltsdauer")
+    df_kanton = df_kanton[df_kanton['Ankünfte'].apply(is_numeric) & df_kanton['Logiernächte'].apply(is_numeric)] #filter out not avaiable data
     df_kanton = map_herkunftsland(df_kanton, "Herkunftsland", "Herkunftsland_grob")
     df_kanton = df_kanton[(df_kanton["Monat"] != "Jahrestotal") & (df_kanton["Herkunftsland"] != "Herkunftsland - Total")]
 
-    df_supply = df_supply[df_supply['Date'] <= cutoff_date]
-    df_country = df_country[df_country['Date'] <= cutoff_date]
-    df_kanton = df_kanton[df_kanton['Date'] <= cutoff_date]
+    # df_supply = df_supply[df_supply['Date'] <= cutoff_date]
+    # df_country = df_country[df_country['Date'] <= cutoff_date]
+    # df_kanton = df_kanton[df_kanton['Date'] <= cutoff_date]
 
     df_country['Jahr'] = df_country['Jahr'].astype(int)
     df_supply['Jahr'] = df_supply['Jahr'].astype(int)
     df_kanton['Jahr'] = df_kanton['Jahr'].astype(int)
 
-    #df_hotels = pd.read_feather(f"data/20230721_Hotels.feather")
+    df_hotels = pd.read_feather(f"data/20230721_Hotels.feather")
 
 
-    return df_country, df_supply, df_kanton #df_hotels
+    return df_country, df_kanton, df_supply #df_hotels
 
-df_country, df_supply, df_kanton = load_data(datetime.date.today(), 3) #3 for the current upload logic at bfs
+df_country, df_kanton, df_supply = load_data(datetime.date.today(), 3) #3 for the current upload logic at bfs
 
 
 
