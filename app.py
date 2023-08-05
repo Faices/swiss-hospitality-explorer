@@ -431,12 +431,6 @@ MONTH_MAPPING = {
 
 
 # Helper functions 
-def calculate_cutoff_date(current_date: datetime.date, cutoff_months: int) -> datetime.date:
-    if current_date.day < 8:
-        cutoff_date = datetime.date(current_date.year, current_date.month - cutoff_months, calendar.monthrange(current_date.year, current_date.month - cutoff_months)[1])
-    else:
-        cutoff_date = datetime.date(current_date.year, current_date.month - cutoff_months + 1, calendar.monthrange(current_date.year, current_date.month - cutoff_months + 1)[1])
-    return cutoff_date
 
 def download_data(url: str) -> pd.DataFrame:
     px_data = pyaxis.parse(uri=url, encoding='ISO-8859-2')
@@ -481,13 +475,6 @@ def convert_to_datetime(df: pd.DataFrame) -> pd.DataFrame:
     
     return df
 
-# def convert_to_datetime(df: pd.DataFrame) -> pd.DataFrame:
-#     df['Date'] = pd.to_datetime(df['Jahr'].astype(str) + '-' + df['Monat'].map(MONTH_MAPPING).astype(int).astype(str))
-#     df['Date'] = df['Date'].dt.date
-#     df = df[['Date'] + df.columns[:-1].tolist()]
-#     df = df.sort_values('Date').reset_index(drop=True)
-#     return df
-
 def convert_columns(df: pd.DataFrame, numeric_columns: list[str]) -> pd.DataFrame:
     for column in numeric_columns:
         df[column] = pd.to_numeric(df[column], errors='coerce')
@@ -512,8 +499,7 @@ def is_numeric(value):
 
 # Load data
 @st.cache_data
-def load_data(current_date: datetime.date, cutoff_months: int) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    cutoff_date = calculate_cutoff_date(current_date, cutoff_months)
+def load_data():
     df_country = download_data_utf8(COUNTRY_URL)
     df_country = filter_data(df_country)
     df_country = pivot_data(df_country, ["Jahr", "Monat", "Gemeinde", "Herkunftsland"], "Indikator", "DATA")
@@ -543,10 +529,6 @@ def load_data(current_date: datetime.date, cutoff_months: int) -> tuple[pd.DataF
     df_kanton = map_herkunftsland(df_kanton, "Herkunftsland", "Herkunftsland_grob")
     df_kanton = df_kanton[(df_kanton["Monat"] != "Jahrestotal") & (df_kanton["Herkunftsland"] != "Herkunftsland - Total")]
 
-    # df_supply = df_supply[df_supply['Date'] <= cutoff_date]
-    # df_country = df_country[df_country['Date'] <= cutoff_date]
-    # df_kanton = df_kanton[df_kanton['Date'] <= cutoff_date]
-
     df_country['Jahr'] = df_country['Jahr'].astype(int)
     df_supply['Jahr'] = df_supply['Jahr'].astype(int)
     df_kanton['Jahr'] = df_kanton['Jahr'].astype(int)
@@ -556,7 +538,7 @@ def load_data(current_date: datetime.date, cutoff_months: int) -> tuple[pd.DataF
 
     return df_country, df_kanton, df_supply #df_hotels
 
-df_country, df_kanton, df_supply = load_data(datetime.date.today(), 3) #3 for the current upload logic at bfs
+df_country, df_kanton, df_supply = load_data()
 
 
 
