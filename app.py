@@ -500,7 +500,7 @@ def is_numeric(value):
 # Load data
 @st.cache_data
 def load_data():
-    df_country = download_data_utf8(COUNTRY_URL)
+    df_country = download_data(COUNTRY_URL)
     df_country = filter_data(df_country)
     df_country = pivot_data(df_country, ["Jahr", "Monat", "Gemeinde", "Herkunftsland"], "Indikator", "DATA")
     df_country = convert_to_datetime(df_country)
