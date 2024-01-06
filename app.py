@@ -1508,10 +1508,17 @@ def create_about_page():
 # Calculate the cutoff date (last day of the month before the previous month
 current_date = datetime.date.today()
 
-if current_date.day < 8:
+
+## if current_date.day < 8:
+##cutoff_date = datetime.date(current_date.year, current_date.month - 3, calendar.monthrange(current_date.year, current_date.month - 3)[1])
+##else:
+##cutoff_date = datetime.date(current_date.year, current_date.month - 2, calendar.monthrange(current_date.year, current_date.month - 2)[1])
+
+if current_date.month > 3:
     cutoff_date = datetime.date(current_date.year, current_date.month - 3, calendar.monthrange(current_date.year, current_date.month - 3)[1])
 else:
-    cutoff_date = datetime.date(current_date.year, current_date.month - 2, calendar.monthrange(current_date.year, current_date.month - 2)[1])
+    cutoff_date = datetime.date(current_date.year - 1, 12 - (3 - current_date.month), calendar.monthrange(current_date.year - 1, 12 - (3 - current_date.month))[1])
+
 
 # Define the date range for the slider
 start_date = datetime.date(2018, 1, 1)
