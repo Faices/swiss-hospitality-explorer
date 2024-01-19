@@ -1356,6 +1356,7 @@ def create_markt_page(df,df_gemeinde):
         marker_line_color='white'# line markers between states
     ))
 
+
     # Update the map layout
     fig.update_geos(
         showcountries=False,
@@ -1366,7 +1367,7 @@ def create_markt_page(df,df_gemeinde):
         landcolor='#FAFAFA'  # Set the land color to light gray
         )
     # Display the map
-    st.plotly_chart(fig,use_container_width = True)
+    #st.plotly_chart(fig,use_container_width = True)
 
     #st.caption(f"Abbildung 5: {selected_indicator_Ankünfte_Logiernächte} nach Herkunftsland von {earliest_year} - {most_recent_year} (International)")
 
