@@ -1633,7 +1633,7 @@ elif page == "Nach Gemeinde und Herkunftsland":
     create_other_page(df_country,selected_Gemeinde)
 elif page == "Gesamtmarkt Schweiz":
     create_markt_page(df_kanton,df_supply)
-elif page == "Hotels":
-    create_hotels_page(df_hotels,selected_Gemeinde)
+# elif page == "Hotels":
+#     create_hotels_page(df_hotels,selected_Gemeinde)
 elif page == "About":
     create_about_page()
