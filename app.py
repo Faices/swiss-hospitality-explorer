@@ -15,6 +15,7 @@ import pandas as pd
 import plotly.graph_objs as go
 import base64
 import os
+import gc
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -445,15 +446,25 @@ MONTH_MAPPING = {
 }
 
 
-# Helper functions 
+# Helper functions
+
+def _categorize_low_cardinality_columns(df: pd.DataFrame) -> pd.DataFrame:
+    # The raw PX data repeats a handful of Jahr/Monat/Gemeinde/Herkunftsland/Indikator
+    # strings across millions of rows; category dtype cuts that memory dramatically
+    # during download/pivot, where the peak footprint otherwise blows past the
+    # ~1GB memory budget on Streamlit Community Cloud.
+    for column in df.columns:
+        if column != "DATA":
+            df[column] = df[column].astype("category")
+    return df
 
 def download_data(url: str) -> pd.DataFrame:
     px_data = pyaxis.parse(uri=url, encoding='ISO-8859-2')
-    return px_data['DATA']
+    return _categorize_low_cardinality_columns(px_data['DATA'])
 
 def download_data_utf8(url: str) -> pd.DataFrame:
     px_data = pyaxis.parse(uri=url, encoding='utf-8')
-    return px_data['DATA']
+    return _categorize_low_cardinality_columns(px_data['DATA'])
 
 
 def filter_data(df: pd.DataFrame) -> pd.DataFrame:
@@ -462,6 +473,11 @@ def filter_data(df: pd.DataFrame) -> pd.DataFrame:
 
 def pivot_data(df: pd.DataFrame, index_columns: list[str], columns: str, values: str) -> pd.DataFrame:
     df = df.pivot(index=index_columns, columns=columns, values=values).reset_index()
+    # Cast back to plain string dtype so downstream groupby/merge behavior stays
+    # exactly as before category dtype was introduced (category groupby includes
+    # unused categories by default, which would otherwise add phantom rows).
+    for column in index_columns:
+        df[column] = df[column].astype(str)
     return df
 
 def convert_to_datetime(df: pd.DataFrame) -> pd.DataFrame:
@@ -492,7 +508,7 @@ def convert_to_datetime(df: pd.DataFrame) -> pd.DataFrame:
 
 def convert_columns(df: pd.DataFrame, numeric_columns: list[str]) -> pd.DataFrame:
     for column in numeric_columns:
-        df[column] = pd.to_numeric(df[column], errors='coerce')
+        df[column] = pd.to_numeric(df[column], errors='coerce', downcast='float')
     return df
 
 def calculate_additional_columns(df: pd.DataFrame, numerator: str, denominator: str, result_column: str) -> pd.DataFrame:
@@ -524,6 +540,7 @@ def load_data():
     df_country = calculate_additional_columns(df_country, "Logiernächte", "Ankünfte", "Aufenthaltsdauer")
     df_country = map_herkunftsland(df_country, "Herkunftsland", "Herkunftsland_grob")
     df_country = df_country[(df_country["Monat"] != "Jahrestotal") & (df_country["Herkunftsland"] != "Herkunftsland - Total")]
+    gc.collect()
 
     df_supply = download_data(SUPPLY_URL)
     df_supply = filter_data(df_supply)
@@ -531,6 +548,7 @@ def load_data():
     df_supply = convert_to_datetime(df_supply)
     df_supply = convert_columns(df_supply, ["Ankünfte", "Betriebe", "Betten", "Bettenauslastung in %", "Logiernächte", "Zimmer", "Zimmerauslastung in %", "Zimmernächte"])
     df_supply = df_supply[df_supply['Ankünfte'].apply(is_numeric) & df_supply['Logiernächte'].apply(is_numeric)] #filter out not avaiable data
+    gc.collect()
 
     df_kanton = download_data(KANTON_URL)
     df_kanton = filter_data(df_kanton)

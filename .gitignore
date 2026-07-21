@@ -1,5 +1,6 @@
 data/
 .venv/
 .claude/
+__pycache__/
 
 
