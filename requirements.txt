@@ -1,7 +1,7 @@
-streamlit
-pandas
-plotly
-pyaxis
-python-dateutil
-numpy
-requests
+streamlit==1.59.2
+pandas==3.0.3
+plotly==6.9.0
+pyaxis==0.4.3
+python-dateutil==2.9.0.post0
+numpy==2.5.1
+requests==2.34.2

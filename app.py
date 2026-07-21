@@ -13,6 +13,18 @@ import datetime
 import calendar
 import pandas as pd
 import plotly.graph_objs as go
+import base64
+import os
+
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+@st.cache_resource
+def local_icon_data_uri(relative_path: str) -> str:
+    mime = "image/png" if relative_path.lower().endswith(".png") else "image/svg+xml"
+    with open(os.path.join(APP_DIR, relative_path), "rb") as f:
+        encoded = base64.b64encode(f.read()).decode("utf-8")
+    return f"data:{mime};base64,{encoded}"
 
 
 # Set the page width m #
@@ -27,210 +39,212 @@ line_shape = 'spline'
 
 ## Kantonswappen Links ##
 kantonswappen = {
-        "Aargau":"https://upload.wikimedia.org/wikipedia/commons/b/b5/Wappen_Aargau_matt.svg",
-        "Appenzell Ausserrhoden":"https://upload.wikimedia.org/wikipedia/commons/2/2c/Wappen_Appenzell_Ausserrhoden_matt.svg",
-        "Appenzell Innerrhoden":"https://upload.wikimedia.org/wikipedia/commons/b/b7/Wappen_Appenzell_Innerrhoden_matt.svg",
-        "Basel-Landschaft":"https://upload.wikimedia.org/wikipedia/commons/8/8e/Coat_of_arms_of_Kanton_Basel-Landschaft.svg",
-        "Basel-Stadt":"https://upload.wikimedia.org/wikipedia/commons/7/7d/Wappen_Basel-Stadt_matt.svg",
-        "Bern / Berne":"https://upload.wikimedia.org/wikipedia/commons/4/47/Wappen_Bern_matt.svg",
-        "Fribourg / Freiburg":"https://upload.wikimedia.org/wikipedia/commons/0/01/Wappen_Freiburg_matt.svg",
-        "Genčve":"https://upload.wikimedia.org/wikipedia/commons/9/9d/Wappen_Genf_matt.svg",
-        "Glarus":"https://upload.wikimedia.org/wikipedia/commons/0/0e/Wappen_Glarus_matt.svg",
-        "Graubünden / Grigioni / Grischun":"https://upload.wikimedia.org/wikipedia/commons/c/c3/CHE_Graub%C3%BCnden_COA.svg",
-        "Jura":"https://upload.wikimedia.org/wikipedia/commons/f/f0/Wappen_Jura_matt.svg",
-        "Luzern":"https://upload.wikimedia.org/wikipedia/commons/6/66/Wappen_Luzern_matt.svg",
-        "Neuchâtel":"https://upload.wikimedia.org/wikipedia/commons/d/d1/Wappen_Neuenburg_matt.svg",
-        "Nidwalden":"https://upload.wikimedia.org/wikipedia/commons/b/bd/Wappen_Nidwalden_matt.svg",
-        "Obwalden":"https://upload.wikimedia.org/wikipedia/commons/1/1a/Wappen_Obwalden_matt.svg",
-        "Schaffhausen":"https://upload.wikimedia.org/wikipedia/commons/b/b6/Wappen_Schaffhausen_matt.svg",
-        "Schwyz":"https://upload.wikimedia.org/wikipedia/commons/e/ee/Wappen_Schwyz_matt.svg",
-        "Solothurn":"https://upload.wikimedia.org/wikipedia/commons/b/b7/Wappen_Solothurn_matt.svg",
-        "St. Gallen":"https://upload.wikimedia.org/wikipedia/commons/c/c5/Coat_of_arms_of_canton_of_St._Gallen.svg",
-        "Thurgau":"https://upload.wikimedia.org/wikipedia/commons/7/71/Wappen_Thurgau_matt.svg",
-        "Ticino":"https://upload.wikimedia.org/wikipedia/commons/8/87/Wappen_Tessin_matt.svg",
-        "Uri":"https://upload.wikimedia.org/wikipedia/commons/1/1c/Wappen_Uri_alt.svg",
-        "Valais / Wallis":"https://upload.wikimedia.org/wikipedia/commons/a/a3/Wappen_Wallis_matt.svg",
-        "Vaud":"https://upload.wikimedia.org/wikipedia/commons/1/1d/Wappen_Waadt_matt.svg",
-        "Zug":"https://upload.wikimedia.org/wikipedia/commons/3/31/Wappen_Zug_matt.svg",
-        "Zürich":"https://upload.wikimedia.org/wikipedia/commons/5/5a/Wappen_Z%C3%BCrich_matt.svg"
+        "Aargau":"images/kantonicons/Aargau.svg",
+        "Appenzell Ausserrhoden":"images/kantonicons/AppenzellAusserrhoden.svg",
+        "Appenzell Innerrhoden":"images/kantonicons/AppenzellInnerrhoden.svg",
+        "Basel-Landschaft":"images/kantonicons/Basel-Landschaft.svg",
+        "Basel-Stadt":"images/kantonicons/Basel-Stadt.svg",
+        "Bern / Berne":"images/kantonicons/Bern.svg",
+        "Fribourg / Freiburg":"images/kantonicons/Fribourg.svg",
+        "Genčve":"images/kantonicons/Geneve.svg",
+        "Glarus":"images/kantonicons/Glarus.svg",
+        "Graubünden / Grigioni / Grischun":"images/kantonicons/Graubuenden.svg",
+        "Jura":"images/kantonicons/Jura.svg",
+        "Luzern":"images/kantonicons/Luzern.svg",
+        "Neuchâtel":"images/kantonicons/Neuchatel.svg",
+        "Nidwalden":"images/kantonicons/Nidwalden.svg",
+        "Obwalden":"images/kantonicons/Obwalden.svg",
+        "Schaffhausen":"images/kantonicons/Schaffhausen.svg",
+        "Schwyz":"images/kantonicons/Schwyz.svg",
+        "Solothurn":"images/kantonicons/Solothurn.svg",
+        "St. Gallen":"images/kantonicons/StGallen.svg",
+        "Thurgau":"images/kantonicons/Thurgau.svg",
+        "Ticino":"images/kantonicons/Ticino.svg",
+        "Uri":"images/kantonicons/Uri.svg",
+        "Valais / Wallis":"images/kantonicons/Valais.svg",
+        "Vaud":"images/kantonicons/Vaud.svg",
+        "Zug":"images/kantonicons/Zug.svg",
+        "Zürich":"images/kantonicons/Zuerich.svg"
     }
+kantonswappen = {k: local_icon_data_uri(v) for k, v in kantonswappen.items()}
 
 
 ## Gemeindewappen Links
 gemeindewappen = {
-    'Adelboden': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Adelboden.svg',
-    'Andermatt': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Andermatt.svg',
-    'Anniviers': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Anniviers.svg',
-    'Arosa': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Arosa.svg',
-    'Ascona': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Ascona.svg',
-    'Bad Ragaz': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/BadRagaz.svg',
-    'Baden': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Baden.svg',
-    'Basel': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Basel.svg',
-    'Beatenberg': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Beatenberg.svg',
-    'Bellinzona': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Bellinzona.svg',
-    'Bern': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Bern.svg',
-    'Biel/Bienne': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/BielBienne.svg',
-    'Brienz (BE)': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Brienz.svg',
-    'Brig-Glis': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/BrigGlis.svg',
-    'Bulle': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Bulle.svg',
-    'Celerina/Schlarigna': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/CelerinaSchlarigna.svg',
-    'Chur': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Chur.svg',
-    'Crans-Montana': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/CransMontana.svg',
-    'Davos': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Davos.svg',
-    'Disentis/Mustér': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/DisentisMuster.svg',
-    'Einsiedeln': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Einsiedeln.svg',
-    'Engelberg': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Engelberg.svg',
-    'Feusisberg': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Feusisberg.svg',
-    'Flims': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Flims.svg',
-    'Freienbach': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Freienbach.svg',
-    'Fribourg': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Fribourg.svg',
-    'Gambarogno': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Gambarogno.svg',
-    'Genčve': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Geneve.svg',
-    'Glarus Nord': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/GlarusNord.svg',
-    'Glarus Süd': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/GlarusSud.svg',
-    'Grindelwald': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Grindelwald.svg',
-    'Hasliberg': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Hasliberg.svg',
-    'Ingenbohl': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Ingenbohl.svg',
-    'Interlaken': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Interlaken.svg',
-    'Kandersteg': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Kandersteg.svg',
-    'Kerns': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Kerns.svg',
-    'Klosters-Serneus': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/KlostersSerneus.svg',
-    'Kloten': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Kloten.svg',
-    'Kriens': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Kriens.svg',
-    'Küssnacht (SZ)': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Küssnacht.svg',
-    'Laax': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Laax.svg',
-    'Lausanne': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Lausanne.svg',
-    'Lauterbrunnen': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Lauterbrunnen.svg',
-    'Lenk': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Lenk.svg',
-    'Leukerbad': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Leukerbad.png',
-    'Leysin': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Leysin.svg',
-    'Leytron': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Leytron.svg',
-    'Locarno': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Locarno.svg',
-    'Lugano': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Lugano.svg',
-    'Luzern': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Luzern.svg',
-    'Martigny': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Martigny.svg',
-    'Matten bei Interlaken': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/MattenBeiInterlaken.svg',
-    'Meiringen': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Meiringen.svg',
-    'Meyrin': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Meyrin.svg',
-    'Minusio': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Minusio.svg',
-    'Montreux': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Montreux.svg',
-    'Morges': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Morges.svg',
-    'Morschach': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Morschach.svg',
-    'Muralto': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Muralto.svg',
-    'Neuchâtel': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Neuchatel.svg',
-    'Ollon': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Ollon.svg',
-    'Olten': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Olten.svg',
-    'Opfikon': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Opfikon.svg',
-    'Ormont-Dessus': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/OrmontDessus.svg',
-    'Paradiso': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Paradiso.svg',
-    'Pontresina': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Pontresina.svg',
-    'Pratteln': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Pratteln.svg',
-    'Quarten': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Quarten.svg',
-    'Saanen': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Saanen.svg',
-    'Saas-Fee': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/SaasFee.svg',
-    'Sachseln': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Sachseln.svg',
-    'Samedan': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Samedan.svg',
-    'Samnaun': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Samnaun.svg',
-    'Schaffhausen': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Schaffhausen.svg',
-    'Schwende-Rüte': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/SchwendeRute.svg',
-    'Scuol': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Scuol.svg',
-    'Sigriswil': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Sigriswil.svg',
-    'Sils im Engadin/Segl': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/SilsImEngadinSegl.svg',
-    'Silvaplana': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Silvaplana.svg',
-    'Sion': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Sion.svg',
-    'Solothurn': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Solothurn.svg',
-    'Spiez': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Spiez.svg',
-    'St. Gallen': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/StGallen.svg',
-    'St. Moritz': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/StMoritz.svg',
-    'Thun': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Thun.svg',
-    'Täsch': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Tasch.svg',
-    'Unterseen': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Unterseen.svg',
-    'Val de Bagnes': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/ValDeBagnes.svg',
-    'Vals': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Vals.svg',
-    'Vaz/Obervaz': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/VazObervaz.svg',
-    'Vevey': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Vevey.svg',
-    'Weggis': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Weggis.svg',
-    'Wilderswil': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Wilderswil.svg',
-    'Wildhaus-Alt St. Johann': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/WildhausAltStJohann.svg',
-    'Winterthur': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Winterthur.svg',
-    'Zermatt': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Zermatt.svg',
-    'Zernez': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Zernez.svg',
-    'Zug': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Zug.svg',
-    'Zurzach': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Zurzach.svg',
-    'Zürich': 'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/gemeindeicons/Zürich.svg'
+    'Adelboden': 'images/gemeindeicons/Adelboden.svg',
+    'Andermatt': 'images/gemeindeicons/Andermatt.svg',
+    'Anniviers': 'images/gemeindeicons/Anniviers.svg',
+    'Arosa': 'images/gemeindeicons/Arosa.svg',
+    'Ascona': 'images/gemeindeicons/Ascona.svg',
+    'Bad Ragaz': 'images/gemeindeicons/BadRagaz.svg',
+    'Baden': 'images/gemeindeicons/Baden.svg',
+    'Basel': 'images/gemeindeicons/Basel.svg',
+    'Beatenberg': 'images/gemeindeicons/Beatenberg.svg',
+    'Bellinzona': 'images/gemeindeicons/Bellinzona.svg',
+    'Bern': 'images/gemeindeicons/Bern.svg',
+    'Biel/Bienne': 'images/gemeindeicons/BielBienne.svg',
+    'Brienz (BE)': 'images/gemeindeicons/Brienz.svg',
+    'Brig-Glis': 'images/gemeindeicons/BrigGlis.svg',
+    'Bulle': 'images/gemeindeicons/Bulle.svg',
+    'Celerina/Schlarigna': 'images/gemeindeicons/CelerinaSchlarigna.svg',
+    'Chur': 'images/gemeindeicons/Chur.svg',
+    'Crans-Montana': 'images/gemeindeicons/CransMontana.svg',
+    'Davos': 'images/gemeindeicons/Davos.svg',
+    'Disentis/Mustér': 'images/gemeindeicons/DisentisMuster.svg',
+    'Einsiedeln': 'images/gemeindeicons/Einsiedeln.svg',
+    'Engelberg': 'images/gemeindeicons/Engelberg.svg',
+    'Feusisberg': 'images/gemeindeicons/Feusisberg.svg',
+    'Flims': 'images/gemeindeicons/Flims.svg',
+    'Freienbach': 'images/gemeindeicons/Freienbach.svg',
+    'Fribourg': 'images/gemeindeicons/Fribourg.svg',
+    'Gambarogno': 'images/gemeindeicons/Gambarogno.svg',
+    'Genčve': 'images/gemeindeicons/Geneve.svg',
+    'Glarus Nord': 'images/gemeindeicons/GlarusNord.svg',
+    'Glarus Süd': 'images/gemeindeicons/GlarusSud.svg',
+    'Grindelwald': 'images/gemeindeicons/Grindelwald.svg',
+    'Hasliberg': 'images/gemeindeicons/Hasliberg.svg',
+    'Ingenbohl': 'images/gemeindeicons/Ingenbohl.svg',
+    'Interlaken': 'images/gemeindeicons/Interlaken.svg',
+    'Kandersteg': 'images/gemeindeicons/Kandersteg.svg',
+    'Kerns': 'images/gemeindeicons/Kerns.svg',
+    'Klosters-Serneus': 'images/gemeindeicons/KlostersSerneus.svg',
+    'Kloten': 'images/gemeindeicons/Kloten.svg',
+    'Kriens': 'images/gemeindeicons/Kriens.svg',
+    'Küssnacht (SZ)': 'images/gemeindeicons/Küssnacht.svg',
+    'Laax': 'images/gemeindeicons/Laax.svg',
+    'Lausanne': 'images/gemeindeicons/Lausanne.svg',
+    'Lauterbrunnen': 'images/gemeindeicons/Lauterbrunnen.svg',
+    'Lenk': 'images/gemeindeicons/Lenk.svg',
+    'Leukerbad': 'images/gemeindeicons/Leukerbad.png',
+    'Leysin': 'images/gemeindeicons/Leysin.svg',
+    'Leytron': 'images/gemeindeicons/Leytron.svg',
+    'Locarno': 'images/gemeindeicons/Locarno.svg',
+    'Lugano': 'images/gemeindeicons/Lugano.svg',
+    'Luzern': 'images/gemeindeicons/Luzern.svg',
+    'Martigny': 'images/gemeindeicons/Martigny.svg',
+    'Matten bei Interlaken': 'images/gemeindeicons/MattenBeiInterlaken.svg',
+    'Meiringen': 'images/gemeindeicons/Meiringen.svg',
+    'Meyrin': 'images/gemeindeicons/Meyrin.svg',
+    'Minusio': 'images/gemeindeicons/Minusio.svg',
+    'Montreux': 'images/gemeindeicons/Montreux.svg',
+    'Morges': 'images/gemeindeicons/Morges.svg',
+    'Morschach': 'images/gemeindeicons/Morschach.svg',
+    'Muralto': 'images/gemeindeicons/Muralto.svg',
+    'Neuchâtel': 'images/gemeindeicons/Neuchatel.svg',
+    'Ollon': 'images/gemeindeicons/Ollon.svg',
+    'Olten': 'images/gemeindeicons/Olten.svg',
+    'Opfikon': 'images/gemeindeicons/Opfikon.svg',
+    'Ormont-Dessus': 'images/gemeindeicons/OrmontDessus.svg',
+    'Paradiso': 'images/gemeindeicons/Paradiso.svg',
+    'Pontresina': 'images/gemeindeicons/Pontresina.svg',
+    'Pratteln': 'images/gemeindeicons/Pratteln.svg',
+    'Quarten': 'images/gemeindeicons/Quarten.svg',
+    'Saanen': 'images/gemeindeicons/Saanen.svg',
+    'Saas-Fee': 'images/gemeindeicons/SaasFee.svg',
+    'Sachseln': 'images/gemeindeicons/Sachseln.svg',
+    'Samedan': 'images/gemeindeicons/Samedan.svg',
+    'Samnaun': 'images/gemeindeicons/Samnaun.svg',
+    'Schaffhausen': 'images/gemeindeicons/Schaffhausen.svg',
+    'Schwende-Rüte': 'images/gemeindeicons/SchwendeRute.png',
+    'Scuol': 'images/gemeindeicons/Scuol.svg',
+    'Sigriswil': 'images/gemeindeicons/Sigriswil.svg',
+    'Sils im Engadin/Segl': 'images/gemeindeicons/SilsImEngadinSegl.svg',
+    'Silvaplana': 'images/gemeindeicons/Silvaplana.svg',
+    'Sion': 'images/gemeindeicons/Sion.svg',
+    'Solothurn': 'images/gemeindeicons/Solothurn.svg',
+    'Spiez': 'images/gemeindeicons/Spiez.svg',
+    'St. Gallen': 'images/gemeindeicons/StGallen.svg',
+    'St. Moritz': 'images/gemeindeicons/StMoritz.svg',
+    'Thun': 'images/gemeindeicons/Thun.svg',
+    'Täsch': 'images/gemeindeicons/Tasch.svg',
+    'Unterseen': 'images/gemeindeicons/Unterseen.svg',
+    'Val de Bagnes': 'images/gemeindeicons/ValDeBagnes.svg',
+    'Vals': 'images/gemeindeicons/Vals.svg',
+    'Vaz/Obervaz': 'images/gemeindeicons/VazObervaz.svg',
+    'Vevey': 'images/gemeindeicons/Vevey.svg',
+    'Weggis': 'images/gemeindeicons/Weggis.svg',
+    'Wilderswil': 'images/gemeindeicons/Wilderswil.svg',
+    'Wildhaus-Alt St. Johann': 'images/gemeindeicons/WildhausAltStJohann.svg',
+    'Winterthur': 'images/gemeindeicons/Winterthur.svg',
+    'Zermatt': 'images/gemeindeicons/Zermatt.svg',
+    'Zernez': 'images/gemeindeicons/Zernez.svg',
+    'Zug': 'images/gemeindeicons/Zug.svg',
+    'Zurzach': 'images/gemeindeicons/Zurzach.svg',
+    'Zürich': 'images/gemeindeicons/Zürich.svg'
 }
+gemeindewappen = {k: local_icon_data_uri(v) for k, v in gemeindewappen.items()}
 
 
 
 
 
-## Flaggen Herkunfstländer Links imgur datachalet ##
+## Flaggen Herkunfstländer Links imgur hashhiker ##
 countryflags = {
-        'Argentinien':'https://i.imgur.com/OmRzePQ.png',
-        'Australien':'https://i.imgur.com/lHW5QxZ.png',
-        'Bahrain':'https://i.imgur.com/I2gftNU.png',
-        'Belarus':'https://i.imgur.com/O4NLELl.png',
-        'Belgien':'https://i.imgur.com/ZDpn1Vt.png',
-        'Brasilien':'https://i.imgur.com/WHZW2cY.png',
-        'Bulgarien':'https://i.imgur.com/SE0Q6O4.png',
-        'Chile':'https://i.imgur.com/RM0E81n.png',
-        'China':'https://i.imgur.com/PPUDcRk.png',
-       'Deutschland':'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/countryicons/germany.svg',
-       'Dänemark':'https://i.imgur.com/pZxjdgN.png',
-       'Estland':'https://i.imgur.com/LDg9hR7.png',
-       'Finnland':'https://i.imgur.com/ZpExlat.png',
-       'Frankreich':'https://i.imgur.com/bNBCrOD.png',
-       'Griechenland':'https://i.imgur.com/sXOYiny.png',
-       'Hongkong':'https://i.imgur.com/V7dILEH.png',
-       'Indien':'https://i.imgur.com/mDiP4Ql.png',
-       'Indonesien':'https://i.imgur.com/6aDilJT.png',
-       'Irland':'https://i.imgur.com/DmALWSs.png',
-       'Island':'https://i.imgur.com/EWUKoaA.png',
-       'Israel':'https://i.imgur.com/bDpPHab.png',
-       'Italien':'https://i.imgur.com/nayEcox.png',
-       'Japan':'https://i.imgur.com/fUG4O1B.png',
-       'Kanada':'https://i.imgur.com/DFxUgyd.png',
-       'Katar':'https://i.imgur.com/Lf6Nkhf.png',
-       'Korea (Süd-)':'https://i.imgur.com/PCSjKxj.png',
-       'Kroatien':'https://i.imgur.com/2mGxQ9X.png',
+        'Argentinien':'images/countryicons/argentina.svg',
+        'Australien':'images/countryicons/australia.svg',
+        'Bahrain':'images/countryicons/bahrain.svg',
+        'Belarus':'images/countryicons/belarus.svg',
+        'Belgien':'images/countryicons/belgium.svg',
+        'Brasilien':'images/countryicons/brazil.svg',
+        'Bulgarien':'images/countryicons/bulgaria.svg',
+        'Chile':'images/countryicons/chile.svg',
+        'China':'images/countryicons/china.svg',
+       'Deutschland':'images/countryicons/germany.svg',
+       'Dänemark':'images/countryicons/denmark.svg',
+       'Estland':'images/countryicons/estonia.svg',
+       'Finnland':'images/countryicons/finland.svg',
+       'Frankreich':'images/countryicons/france.svg',
+       'Griechenland':'images/countryicons/greece.svg',
+       'Hongkong':'images/countryicons/hong-kong.svg',
+       'Indien':'images/countryicons/india.svg',
+       'Indonesien':'images/countryicons/indonesia.svg',
+       'Irland':'images/countryicons/ireland.svg',
+       'Island':'images/countryicons/iceland.svg',
+       'Israel':'images/countryicons/israel.svg',
+       'Italien':'images/countryicons/italy.svg',
+       'Japan':'images/countryicons/japan.svg',
+       'Kanada':'images/countryicons/canada.svg',
+       'Katar':'images/countryicons/qatar.svg',
+       'Korea (Süd-)':'images/countryicons/south-korea.svg',
+       'Kroatien':'images/countryicons/croatia.svg',
        'Kuwait':'https://i.imgur.com/FZ75488.png',
-       'Lettland':'https://i.imgur.com/MHVKDx8.png',
-       'Liechtenstein':'https://i.imgur.com/Y3AUCgh.png',
-       'Litauen':'https://i.imgur.com/kbBDHHx.png',
-       'Luxemburg':'https://i.imgur.com/bVOTFzy.png',
-       'Malaysia':'https://i.imgur.com/Em9DRQh.png',
-       'Malta':'https://i.imgur.com/zimgcU2.png',
-       'Mexiko':'https://i.imgur.com/EpBKADW.png',
-       'Neuseeland, Ozeanien':'https://i.imgur.com/FaYARI7.png',
-       'Niederlande':'https://i.imgur.com/kpss3hN.png',
-       'Norwegen':'https://i.imgur.com/83YrW63.png',
-       'Oman':'https://i.imgur.com/qEd1B25.png',
-       'Philippinen':'https://i.imgur.com/AEoCDDZ.png',
-       'Polen':'https://i.imgur.com/aFbc1N2.png',
-       'Portugal':'https://i.imgur.com/KXWaiNP.png',
-       'Rumänien':'https://i.imgur.com/udw6D75.png',
-       'Russland':'https://i.imgur.com/BuA1Xu1.png',
-       'Saudi-Arabien':'https://i.imgur.com/fAD7rTs.png',
-       'Schweden':'https://i.imgur.com/vZZKBuW.png',
-       'Schweiz':'https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/countryicons/switzerland.svg',
-       'Serbien':'https://i.imgur.com/5Y0csmY.png',
-       'Singapur':'https://i.imgur.com/6vSQ0Hm.png',
-       'Slowakei':'https://i.imgur.com/y4AwaR0.png',
-       'Slowenien':'https://i.imgur.com/AhkCIrb.png',
-       'Spanien':'https://i.imgur.com/yJYg5B5.png',
-       'Südafrika':'https://i.imgur.com/mDdZT8Z.png',
-       'Taiwan (Chinesisches Taipei)':'https://i.imgur.com/csGkEsT.png',
-       'Thailand':'https://i.imgur.com/RDgnXvP.png',
-       'Tschechien':'https://i.imgur.com/6cXJIrh.png',
-       'Türkei':'https://i.imgur.com/Z3H1sGU.png',
-       'Ukraine':'https://i.imgur.com/EG8mJFE.png',
-       'Ungarn':'https://i.imgur.com/4XAgkq1.png',
-       'Vereinigte Arabische Emirate':'https://i.imgur.com/VgcPA54.png',
-       'Vereinigte Staaten':'https://i.imgur.com/dMmEpIa.png',
-       'Vereinigtes Königreich':'https://i.imgur.com/h5on67v.png',
+       'Lettland':'images/countryicons/latvia.svg',
+       'Liechtenstein':'images/countryicons/liechtenstein.svg',
+       'Litauen':'images/countryicons/lithuania.svg',
+       'Luxemburg':'images/countryicons/luxembourg.svg',
+       'Malaysia':'images/countryicons/malasya.svg',
+       'Malta':'images/countryicons/malta.svg',
+       'Mexiko':'images/countryicons/mexico.svg',
+       'Neuseeland, Ozeanien':'images/countryicons/new-zealand.svg',
+       'Niederlande':'images/countryicons/netherlands.svg',
+       'Norwegen':'images/countryicons/norway.svg',
+       'Oman':'images/countryicons/oman.svg',
+       'Philippinen':'images/countryicons/philippines.svg',
+       'Polen':'images/countryicons/poland.svg',
+       'Portugal':'images/countryicons/portugal.svg',
+       'Rumänien':'images/countryicons/romania.svg',
+       'Russland':'images/countryicons/russia.svg',
+       'Saudi-Arabien':'images/countryicons/saudi-arabia.svg',
+       'Schweden':'images/countryicons/sweden.svg',
+       'Schweiz':'images/countryicons/switzerland.svg',
+       'Serbien':'images/countryicons/serbia.svg',
+       'Singapur':'images/countryicons/singapore.svg',
+       'Slowakei':'images/countryicons/slovakia.svg',
+       'Slowenien':'images/countryicons/slovenia.svg',
+       'Spanien':'images/countryicons/spain.svg',
+       'Südafrika':'images/countryicons/south-africa.svg',
+       'Taiwan (Chinesisches Taipei)':'images/countryicons/taiwan.svg',
+       'Thailand':'images/countryicons/thailand.svg',
+       'Tschechien':'images/countryicons/czech-republic.svg',
+       'Türkei':'images/countryicons/turkey.svg',
+       'Ukraine':'images/countryicons/ukraine.svg',
+       'Ungarn':'images/countryicons/hungary.svg',
+       'Vereinigte Arabische Emirate':'images/countryicons/united-arab-emirates.svg',
+       'Vereinigte Staaten':'images/countryicons/united-states.svg',
+       'Vereinigtes Königreich':'images/countryicons/united-kingdom.svg',
        'Zypern':'https://upload.wikimedia.org/wikipedia/commons/d/d4/Flag_of_Cyprus.svg',
-       'Ägypten':'https://i.imgur.com/SdhPKH1.png',
-       'Österreich':'https://i.imgur.com/TRNRlAv.png',
+       'Ägypten':'images/countryicons/egypt.svg',
+       'Österreich':'images/countryicons/austria.svg',
        'Übriges Afrika':'',
        'Übriges Europa':'https://i.imgur.com/sMKYRfd.png',
        'Übriges Nordafrika':'',
@@ -239,6 +253,7 @@ countryflags = {
        'Übriges Westasien':'',
        'Übriges Zentralamerika, Karibik':''
     }
+countryflags = {k: (local_icon_data_uri(v) if v.startswith("images/") else v) for k, v in countryflags.items()}
 
 
 gemeinde_kanton_mapping = {
@@ -731,8 +746,7 @@ def create_main_page(df,selected_Gemeinde):
 
     )
     st.plotly_chart(fig_line,
-                    use_container_width=True,
-                    auto_open=False)
+                    width='stretch')
     st.caption(f"Abbildung 1: {selected_indicator_1} und {selected_indicator_2} pro Monat in der Gemeinde {selected_Gemeinde} von {earliest_year} - {most_recent_year}")
 
 
@@ -759,8 +773,7 @@ def create_main_page(df,selected_Gemeinde):
         legend_title_text=''  # Hide the title of the x-axis
     )
     st.plotly_chart(fig_line,
-                    use_container_width=True,
-                    auto_open=True)
+                    width='stretch')
     st.caption(f"Abbildung 2: {selected_indicator_Ankünfte_Logiernächte} pro Monat in der Gemeinde {selected_Gemeinde} im Jahresvergleich")
 
 
@@ -838,7 +851,7 @@ def create_main_page(df,selected_Gemeinde):
         legend_title_text=''  # Hide the title of the x-axis
 
     )
-    st.plotly_chart(fig_line, use_container_width=True, auto_open=False)
+    st.plotly_chart(fig_line, width='stretch')
     st.caption(f"Abbildung 3: {selected_indicator} pro Monat in der Gemeinde {selected_Gemeinde} von {earliest_year} - {most_recent_year}")
 
 
@@ -861,10 +874,10 @@ def create_main_page(df,selected_Gemeinde):
         legend_title_text=''  # Hide the title of the x-axis
     )
 
-    st.plotly_chart(fig_line, use_container_width=True, auto_open=False)
+    st.plotly_chart(fig_line, width='stretch')
     st.caption(f"Abbildung 4: {selected_indicator} pro Monat in der Gemeinde {selected_Gemeinde} im Jahresvergleich")
     st.divider()
-    st.caption("with :heart: by Datachalet")
+    st.caption("with :heart: by Hashhiker")
 
 def create_other_page(df,selected_Gemeinde):
     # Filter dataframe based on selected Gemeinde
@@ -905,7 +918,7 @@ def create_other_page(df,selected_Gemeinde):
     # Perform grouping and aggregation
     grouped_df = filtered_df.groupby(['Herkunftsland', 'Date']).sum().reset_index()
     # Sort the unique values based on aggregated values in descending order
-    sorted_values = grouped_df.groupby('Herkunftsland').sum().sort_values(y_column, ascending=False).index.tolist()
+    sorted_values = grouped_df.groupby('Herkunftsland')[y_column].sum().sort_values(ascending=False).index.tolist()
     # Create a new column to group Herkunftsländer
     grouped_df['Herkunftsland_grouped'] = grouped_df['Herkunftsland'].apply(lambda x: x if x in sorted_values[:15] else 'Others')
     grouped_df_no_date = grouped_df.groupby('Herkunftsland_grouped').agg({'Ankünfte': 'sum', 'Logiernächte': 'sum','Aufenthaltsdauer': 'mean'}).reset_index()
@@ -1023,20 +1036,20 @@ def create_other_page(df,selected_Gemeinde):
     )
     
     col1, col2 = st.columns(2)
-    col1.plotly_chart(fig_bar_grob, use_container_width=True, auto_open=False)
-    col2.plotly_chart(fig_donut_grob, use_container_width=True, auto_open=False)
+    col1.plotly_chart(fig_bar_grob, width='stretch')
+    col2.plotly_chart(fig_donut_grob, width='stretch')
     st.caption(f"Abbildung 1: {selected_indicator} für die Gemeinde {selected_Gemeinde} (Zeitraum {start_year} - {end_year})")
-    st.plotly_chart(fig_area_grob, use_container_width=True, auto_open=False)
+    st.plotly_chart(fig_area_grob, width='stretch')
     st.caption(f"Abbildung 2: {selected_indicator} pro Monat in der Gemeinde {selected_Gemeinde} von {start_year} - {end_year} nach Herkunftsland")
 
     st.divider()
     st.header("Top 15 Herkunftsländer")
     st.divider()
-    st.plotly_chart(fig_bar, use_container_width=True, auto_open=False)
+    st.plotly_chart(fig_bar, width='stretch')
     st.caption(f"Abbildung 3: {selected_indicator} für die Gemeinde {selected_Gemeinde} nach Herkunftsland Absolut (Zeitraum {start_year} - {end_year})")
-    st.plotly_chart(fig_donut, use_container_width=True, auto_open=False)
+    st.plotly_chart(fig_donut, width='stretch')
     st.caption(f"Abbildung 4: {selected_indicator} für die Gemeinde {selected_Gemeinde} nach Herkunftsland in % (Zeitraum {start_year} - {end_year})")
-    st.plotly_chart(fig_area, use_container_width=True, auto_open=False)
+    st.plotly_chart(fig_area, width='stretch')
     st.caption(f"Abbildung 5: {selected_indicator} pro Monat in der Gemeinde {selected_Gemeinde} von {start_year} - {end_year} nach Herkunftsland")
 
 
@@ -1065,7 +1078,7 @@ def create_other_page(df,selected_Gemeinde):
 
         },
         hide_index=True,
-        use_container_width = True
+        width='stretch'
     )
     st.caption(f"Abbildung 6: {selected_indicator} für die Gemeinde {selected_Gemeinde} von {start_year} - {end_year} nach Herkunftsland")
 
@@ -1079,12 +1092,12 @@ def create_other_page(df,selected_Gemeinde):
     #    mime='text/csv'
     #)
     st.divider()
-    st.caption("with :heart: by Datachalet")
+    st.caption("with :heart: by Hashhiker")
 
 
 def create_markt_page(df,df_gemeinde):
     
-    swissflag_url = "https://raw.githubusercontent.com/thenotsowhiterabbit/hotelstats/master/images/countryicons/switzerland.svg"
+    swissflag_url = local_icon_data_uri("images/countryicons/switzerland.svg")
 
     # Display the title with image at the end
     st.markdown(
@@ -1226,7 +1239,7 @@ def create_markt_page(df,df_gemeinde):
         legend_title_text=''  # Hide the title of the x-axis
 
     )
-    st.plotly_chart(fig_line, use_container_width=True, auto_open=False)
+    st.plotly_chart(fig_line, width='stretch')
     st.caption(f"Abbildung 1: {selected_indicator_1} und {selected_indicator_2} pro Monat von {earliest_year} - {most_recent_year}")
 
 
@@ -1256,7 +1269,7 @@ def create_markt_page(df,df_gemeinde):
         #legend_traceorder="reversed",  # Sort the legend in descending order
         legend_title_text=''  # Hide the title of the x-axis
     )
-    st.plotly_chart(fig_line, use_container_width=True, auto_open=True)
+    st.plotly_chart(fig_line, width='stretch')
     st.caption(f"Abbildung 2: {selected_indicator_Ankünfte_Logiernächte} pro Monat im Jahresvergleich von {earliest_year} - {most_recent_year}")
 
 
@@ -1286,7 +1299,7 @@ def create_markt_page(df,df_gemeinde):
         ),
                 },
         hide_index=True,
-        use_container_width = True
+        width='stretch'
     )
     st.caption(f"Abbildung 3: {selected_indicator_Ankünfte_Logiernächte} nach Kanton von {earliest_year} - {most_recent_year}")
 
@@ -1315,7 +1328,7 @@ def create_markt_page(df,df_gemeinde):
         ),
                 },
         hide_index=True,
-        use_container_width = True
+        width='stretch'
     )
 
     st.caption(f"Abbildung 4: {selected_indicator_Ankünfte_Logiernächte} nach Gemeinde von {earliest_year} - {most_recent_year}")
@@ -1399,12 +1412,12 @@ def create_markt_page(df,df_gemeinde):
 
         },
         hide_index=True,
-        use_container_width = True
+        width='stretch'
     )
     st.caption(f"Abbildung 5: {selected_indicator_Ankünfte_Logiernächte} nach Herkunftsland von {earliest_year} - {most_recent_year}")
 
     st.divider()
-    st.caption("with :heart: by Datachalet")
+    st.caption("with :heart: by Hashhiker")
 
 
 
@@ -1433,7 +1446,7 @@ def create_hotels_page(df,selected_Gemeinde):
             traceorder='reversed',
         )
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
 
     # Drop rows where either latitude or longitude is missing
@@ -1474,7 +1487,7 @@ def create_hotels_page(df,selected_Gemeinde):
 
     # # Display the map
     # st.plotly_chart(fig, use_container_width=True)
-    st.caption("with :heart: by Datachalet")
+    st.caption("with :heart: by Hashhiker")
 
 
 def create_about_page():
@@ -1485,7 +1498,6 @@ def create_about_page():
     st.subheader("Kontakt")
     column1, column2 = st.columns(2)
     column1.markdown('<a href="https://github.com/datachalet"><img src="https://i.imgur.com/EbsWGAk.png" alt="Title" width="80px"></a>', unsafe_allow_html=True)
-    column1.write('datachalet@gmail.com')
     st.divider()
     st.subheader("Datenquellen")
     st.write('Hotellerie: Ankünfte und Logiernächte der geöffneten Betriebe in 100 Gemeinden nach Jahr, Monat, Gemeinde und Gästeherkunftsland (BFS):')
@@ -1495,7 +1507,7 @@ def create_about_page():
     st.write('Hotellerie: Angebot und Nachfrage der geöffneten Betriebe in 100 Gemeinden nach Jahr, Monat und Gemeinde:')
     st.write('https://www.bfs.admin.ch/asset/de/26465894')
     st.divider()
-    st.caption("with :heart: by Datachalet")
+    st.caption("with :heart: by Hashhiker")
 
 
 
@@ -1622,7 +1634,7 @@ with expander:
 primaryColor=color1 #for the map
 
 st.sidebar.divider() 
-st.sidebar.caption("with :heart: by Datachalet")
+st.sidebar.caption("with :heart: by Hashhiker")
 
 
 #### Page Selection
